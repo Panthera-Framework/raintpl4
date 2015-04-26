@@ -8,6 +8,41 @@
 class pseudoSandboxing extends Rain\Tpl\RainTPL4Plugin
 {
     protected $parser = null;
+    protected $defaultConfig = array(
+        'sandboxMode' => 'blacklist',
+        'sandboxWhitelist' => array(
+            'strpos', 'str_replace', 'str_ireplace', 'strpad', 'strtolower', 'ucfirst', 'strtoupper',
+            'in_array', 'array_reverse', 'join', 'explode', 'strlen', 'substr', 'substr_replace', 'is_array',
+            'sizeof', 'count', 'range', 'is_string', 'is_int', 'is_object', 'time', 'date', 'strtotime',
+            'ob_start', 'ob_get_clean', 'ob_end_flush', 'stripslashes', 'strip_tags', 'trim', 'ltrim', 'rtrim',
+            'htmlspecialchars', 'nl2br', 'print', 'echo', 'md5', 'sha256', 'sha512', 'hash', 'str_repeat', 'str_word_count',
+            'strchr', 'chr', 'stripos', 'stristr', 'strstr', 'strcmp', 'strnatcasecmp', 'strncasecmp', 'substr_count',
+            'substr_compare', 'strtok', 'soundex', 'quotemeta', 'addslashes', 'addcslashes', 'count_chars',
+            'reset', 'sort', 'ksort', 'usort', 'array_multisort', 'uksort', 'rsort', 'shuffle', 'reset', 'pos',
+            'prev', 'next', 'natsort', 'natcasesort', 'key_exists', 'array_diff', 'array_flip', 'array_map',
+            'isset', 'array_merge', 'array_pop', 'array_push', 'array_sum', 'array_slice', 'is_long', 'is_real',
+            'is_resource', 'is_null', 'json_encode', 'serialize', 'is_scalar', 'is_real', 'is_double', 'gettype',
+            'empty', 'intval', 'floatval', 'boolval', 'doubleval', 'is_bool',
+        ),
+
+        'sandboxBlacklist' => array(
+            'exec', 'shell_exec', 'pcntl_exec', 'passthru', 'proc_open', 'system',
+            'posix_kill', 'posix_setsid', 'pcntl_fork', 'posix_uname', 'php_uname',
+            'phpinfo', 'popen', 'file_get_contents', 'file_put_contents', 'rmdir',
+            'mkdir', 'unlink', 'highlight_contents', 'symlink',
+            'apache_child_terminate', 'apache_setenv', 'define_syslog_variables',
+            'escapeshellarg', 'escapeshellcmd', 'eval', 'fp', 'fput',
+            'ftp_connect', 'ftp_exec', 'ftp_get', 'ftp_login', 'ftp_nb_fput',
+            'ftp_put', 'ftp_raw', 'ftp_rawlist', 'highlight_file', 'ini_alter',
+            'ini_get_all', 'ini_restore', 'inject_code', 'mysql_pconnect',
+            'openlog', 'passthru', 'php_uname', 'phpAds_remoteInfo',
+            'phpAds_XmlRpc', 'phpAds_xmlrpcDecode', 'phpAds_xmlrpcEncode',
+            'posix_getpwuid', 'posix_kill', 'posix_mkfifo', 'posix_setpgid',
+            'posix_setsid', 'posix_setuid', 'posix_uname', 'proc_close',
+            'proc_get_status', 'proc_nice', 'proc_open', 'proc_terminate',
+            'syslog', 'xmlrpc_entity_decode',
+        ),
+    );
 
     public function init()
     {
