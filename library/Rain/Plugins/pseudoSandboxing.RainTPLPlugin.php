@@ -2,6 +2,12 @@
 /**
  * Simple sandboxing plugin, uses PHP Parser (Lexer)
  *
+ * List of extra tokens that could be blocked:
+ * - @closure: Closure functions
+ * - @eval: Code evaluation
+ * - @include: Includes, requires etc.
+ * - shell_exec: Includes both function shell_exec() and shell commands inside ` quotes
+ *
  * @package Rain\Plugins
  * @author Damian Kęska <damian@pantheraframework.org>
  */
