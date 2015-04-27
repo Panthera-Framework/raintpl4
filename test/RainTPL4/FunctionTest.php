@@ -11,6 +11,7 @@ class FunctionTest extends RainTPLTestCase
      * <data-time>2015-05-05 10:00</data-time>
      * <expects>2015-05-05T10:00:00+02:00">2015-05-05 10:00</expects>
      *
+     * @author xPaw <github@xpaw.me>
      * @author Damian Kęska <damian@pantheraframework.org>
      */
     public function testXPawFunctionVarReplace()

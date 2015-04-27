@@ -635,7 +635,7 @@ class Parser
         if (!empty($loopLevel) && $loopLevel !== 'auto')
             $html = preg_replace(array('/(\$key)\b/', '/(\$value)\b/', '/(\$counter)\b/'), array('${1}' . $loopLevel, '${1}' . $loopLevel, '${1}' . $loopLevel), $html);
 
-        preg_match_all('/\$([a-z_A-Z.0-9]+)/', $html, $variables);
+        preg_match_all('/\$([a-z_A-Z.0-9$]+)/', $html, $variables);
 
         // if no variables found
         if (!$variables || !$variables[0])
