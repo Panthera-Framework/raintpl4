@@ -40,7 +40,7 @@ class Parser
     public $registeredTags = array();
 
     // tags natively supported
-    protected static $tags = array(
+    public $tags = array(
         // @TODO: {block}
         // @TODO: {foreach type="array"} Strict type setting to minimize output code
         // @TODO: {autoescape} for escaping HTML code inside
@@ -377,7 +377,7 @@ class Parser
                     'profile' => array(),
                 ),
             );
-            $tags = static::$tags;
+            $tags = $this->tags;
             $templateEnding = '';
 
             // uncomment line below to take a look what we have to parse
@@ -414,7 +414,7 @@ class Parser
                  */
                 if ($preDetect)
                 {
-                    $tags = static::$tags;
+                    $tags = $this->tags;
                     $preDetectTag = substr($part, self::strposa($part, array('/', '{'), 0, 'max') + 1);
                     $preDetectTag = substr($preDetectTag, 0, self::strposa($preDetectTag, array(
                         ' ', '=', '}',
@@ -423,7 +423,7 @@ class Parser
                     if ($preDetectTag == '$') $preDetectTag = 'variable';
                     if ($preDetectTag == '#') $preDetectTag = 'constant';
 
-                    if (isset(static::$tags[$preDetectTag]) && static::$tags[$preDetectTag])
+                    if (isset($this->tags[$preDetectTag]) && $this->tags[$preDetectTag])
                     {
                         unset($tags[$preDetectTag]);
 
