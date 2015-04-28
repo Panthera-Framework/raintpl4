@@ -74,6 +74,24 @@ class RainTPL4
     );
 
     /**
+     * Here you could enable/disable tags from Parser or add your own
+     *
+     * @var array
+     */
+    public $tags = array();
+
+    /**
+     * List of attached functions for parsing blocks
+     *
+     * Example: 'myTag' => array($object, 'methodName')
+     *
+     * @var array
+     */
+    public $blockParserCallbacks = array(
+
+    );
+
+    /**
      * Constructor
      *
      * @author Damian Kęska <damian@pantheraframework.org>

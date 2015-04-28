@@ -46,20 +46,22 @@ class Parser
         // @TODO: {autoescape} for escaping HTML code inside
         // @TODO: Ternary operator on variables
 
-        'variable' => true, // {$} RainTPL3.1
-        'if' => true, // {if}, {elseif} RainTPL3.1
-        'else' => true, // {else} RainTPL3.1
-        'function' => true, // {function} RainTPL3.1
-        'loop' => true, // {loop}, {foreach} RainTPL3.1
-        'loop_break' => true, // RainTPL3.1
-        'loop_continue' => true, // RainTPL3.1
-        'include' => true, // RainTPL3.1
-        'capture' => true, // RainTPL3.1
-        'block' => true, // {block} RainTPL3.1
-        'noparse' => true, // {noparse}, {literal} RainTPL3.1
-        'comment' => true, // {*}, {ignore} RainTPL3.1
-        'constant' => true, // {#CONSTANT_NAME#} RainTPL3.1
-        'mark' => true, // {mark a} {goto a} RainTPL3.1
+        'variable' => true, // {$} RainTPL4
+        'if' => true, // {if}, {elseif} RainTPL4
+        'else' => true, // {else} RainTPL4
+        'function' => true, // {function} RainTPL4
+        'loop' => true, // {loop}, {foreach} RainTPL4
+        'loop_break' => true, // RainTPL4
+        'loop_continue' => true, // RainTPL4
+        'include' => true, // RainTPL4
+        'capture' => true, // RainTPL4
+        'block' => true, // {block} RainTPL4
+        'noparse' => true, // {noparse}, {literal} RainTPL4
+        'comment' => true, // {*}, {ignore} RainTPL4
+        'constant' => true, // {#CONSTANT_NAME#} RainTPL4
+        'mark' => true, // {mark a} {goto a} RainTPL4
+        'customTags' => false, // Custom defined tags (regexp only), will auto-enable when $registeredTags will contain any function
+        // put your custom 'tagName' => true/false // here, and put 'tagName' => function() to $this->blockParserCallbacks to register you own non-regexp block parser
     );
 
     /**
@@ -89,6 +91,8 @@ class Parser
             $this->__eventHandlers = $tplInstance->__eventHandlers;
             $this->events = $tplInstance->events;
             $this->registeredTags = $tplInstance->registeredTags;
+            $this->tags = array_merge($this->tags, $tplInstance->tags);
+            $this->blockParserCallbacks = array_merge($this->blockParserCallbacks, $tplInstance->blockParserCallbacks);
         }
 
         $this->executeEvent('parser.__construct', $tplInstance);
@@ -114,7 +118,6 @@ class Parser
 
         // open the template
         $fp = fopen($templateFilepath, "r");
-        $parsedCode = '';
 
         // lock the file
         if (flock($fp, LOCK_SH))
@@ -329,6 +332,7 @@ class Parser
     protected function compileTemplate($code, $templateFilepath)
     {
         $parsedCode = '';
+        $templateEnding = '';
 
         // statistics
         $compilationTime = microtime(true);
@@ -347,6 +351,10 @@ class Parser
             static::getPlugins()->run('beforeParse', $context);
             $code = $context->code;
         }*/
+
+        // custom tags
+        if ($this->registeredTags)
+            $this->tags['customTags'] = true;
 
         // remove comments
         if ($this->getConfigurationKey('remove_comments'))
@@ -378,7 +386,6 @@ class Parser
                 ),
             );
             $tags = $this->tags;
-            $templateEnding = '';
 
             // uncomment line below to take a look what we have to parse
             // var_dump($codeSplit);
@@ -791,7 +798,6 @@ class Parser
     public function getQuotesPositions($code, $charList = null)
     {
         $pos = 0;
-        $count = 0;
         $found = array();
 
         if ($charList === null)
@@ -1324,6 +1330,8 @@ class Parser
             $part = '<?php }else{?>';
             return true;
         }
+
+        return null;
     }
 
     /**
@@ -1364,6 +1372,8 @@ class Parser
             $part = '';
             return true;
         }
+
+        return null;
     }
 
     /**
@@ -1773,6 +1783,41 @@ class Parser
             $part = '<?php continue;?>';
             return true;
         }
+    }
+
+    /**
+     * Implements possibility to create regexp tag parsers
+     *
+     * @param $tagData
+     * @param $part
+     * @param $tag
+     * @param $templateFilePath
+     * @param $blockIndex
+     * @param $blockPositions
+     * @param $code
+     * @param $passAllBlocksTo
+     * @param $lowerPart
+     *
+     * @author Damian Kęska <damian.keska@fingo.pl>
+     * @return bool|null
+     */
+    protected function customTagsBlockParser(&$tagData, &$part, &$tag, $templateFilePath, $blockIndex, $blockPositions, $code, &$passAllBlocksTo, $lowerPart)
+    {
+        foreach ($this->registeredTags as $pattern => $customTag)
+        {
+            $matches = null;
+            preg_match($pattern, $part, $matches);
+
+            if (is_callable($customTag))
+            {
+                $return = $customTag($tagData, $part, $tag, $templateFilePath, $blockIndex, $blockPositions, $code, $passAllBlocksTo, $lowerPart, $matches);
+
+                if ($return === true)
+                    return true;
+            }
+        }
+
+        return null;
     }
 
     /**

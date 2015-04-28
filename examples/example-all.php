@@ -61,6 +61,35 @@ $rain->assign(array(
     }
 );*/
 
+/**
+ * Add a custom non-regexp tag
+ */
+function translate($message)
+{
+    $messages = array(
+        'message to translate' => 'message translated',
+    );
+
+    if (isset($messages[$message]))
+    {
+        return $messages[$message];
+    }
+
+    return $message;
+}
+
+$rain->tags['translate'] = true;
+$rain->blockParserCallbacks['translate'] = function(&$tagData, &$part, &$tag, $templateFilePath, $blockIndex, $blockPositions, $code, &$passAllBlocksTo, $lowerPart) {
+    if (substr($part, 0, 2) == '{@')
+    {
+        // replace code block
+        $part = translate(substr($part, 2, -2));
+
+        // set parsing status as successful (tag was detected and replaced)
+        return true;
+    }
+};
+
 // draw
 echo $rain->draw("test");
 
