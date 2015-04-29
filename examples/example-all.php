@@ -64,15 +64,17 @@ $rain->assign(array(
 /**
  * Add a custom non-regexp tag
  */
-function translate($message)
+function translate($message, $language)
 {
     $messages = array(
-        'message to translate' => 'message translated',
+        'english' => array(
+            'message to translate' => 'message translated',
+        ),
     );
 
-    if (isset($messages[$message]))
+    if (isset($messages[$language][$message]))
     {
-        return $messages[$message];
+        return $messages[$language][$message];
     }
 
     return $message;
@@ -80,10 +82,22 @@ function translate($message)
 
 $rain->tags['translate'] = true;
 $rain->blockParserCallbacks['translate'] = function(&$tagData, &$part, &$tag, $templateFilePath, $blockIndex, $blockPositions, $code, &$passAllBlocksTo, $lowerPart) {
-    if (substr($part, 0, 2) == '{@')
+    $opening = substr($part, 0, 2);
+
+    if ($opening == '{@' || $opening == '{%')
     {
+        $message = substr($part, 2, -2);
+        $delimiterPos = strpos($message, '|');
+        $language = 'english';
+
+        if ($delimiterPos !== false)
+        {
+            $language = substr($message, ($delimiterPos + 1));
+            $message = substr($message, 0, $delimiterPos);
+        }
+
         // replace code block
-        $part = translate(substr($part, 2, -2));
+        $part = translate($message, $language);
 
         // set parsing status as successful (tag was detected and replaced)
         return true;
