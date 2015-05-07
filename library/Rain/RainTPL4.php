@@ -101,6 +101,16 @@ class RainTPL4
     );
 
     /**
+     * Debug backtraces array in debugging mode
+     *
+     * @var array
+     */
+    public $debugData = array(
+        'assigns' => array(),
+        'draws' => array(),
+    );
+
+    /**
      * Constructor
      *
      * @author Damian Kęska <damian@pantheraframework.org>
@@ -180,6 +190,16 @@ class RainTPL4
      */
     public function draw($templateFilePath, $toString = FALSE, $isString = FALSE)
     {
+        if ($this->getConfigurationKey('debug'))
+        {
+            $this->debugData['draws'][] = array(
+                'templateFilePath' => $templateFilePath,
+                'toString' => $toString,
+                'isString' => $isString,
+                'stacktrace' => debug_backtrace(),
+            );
+        }
+
         // re-load plugins
         $this->loadEventHandlers();
 
@@ -243,6 +263,15 @@ class RainTPL4
             $this->variables = $variable + $this->variables;
         else
             $this->variables[$variable] = $value;
+
+        if ($this->getConfigurationKey('debug'))
+        {
+            $this->debugData['assigns'][] = array(
+                'variable' => $variable,
+                'value' => $value,
+                'stacktrace' => debug_backtrace(),
+            );
+        }
 
         return $this;
     }
