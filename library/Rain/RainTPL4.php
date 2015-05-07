@@ -142,6 +142,29 @@ class RainTPL4
 
             return substr($inputString, 0, ($limit - strlen($ending))) . $ending;
         };
+
+        /**
+         * Python-like array/string search
+         *
+         * Python: "test" in "this is a test"
+         * RainTPL modifier: "test"|in:"this is a a test"
+         *
+         * @param mixed $needle
+         * @param array|string $haystack
+         *
+         * @author Damian Kęska <damian@pantheraframework.org>
+         * @return bool
+         */
+        $this->modifiers['in'] = function ($needle, $haystack) {
+            if (is_string($haystack) && is_string($needle))
+            {
+                return (strpos($haystack, $needle) !== false);
+            } elseif (is_array($haystack)) {
+                return (in_array($needle, $haystack) || array_key_exists($needle, $haystack));
+            }
+
+            return false;
+        };
     }
 
     /**

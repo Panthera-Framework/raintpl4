@@ -51,4 +51,50 @@ class BuiltinModifiersTest extends RainTPLTestCase
         $this->setupRainTPL4();
         $this->autoAssertEquals();
     }
+
+    /**
+     * Python-like in operator test for string (as RainTPL modificator)
+     *
+     * <code>{"test"|in:"this is a test"}</code>
+     * <expects>1</expects>
+     *
+     * @author Damian Kęska <damian@pantheraframework.org>
+     */
+    public function testBuiltinModifierInString()
+    {
+        $this->setupRainTPL4();
+        $this->autoAssertEquals();
+    }
+
+    /**
+     * Python-like in operator test for array (as RainTPL modificator)
+     *
+     * <code>{"test"|in:$array}</code>
+     * <expects>1</expects>
+     *
+     * @author Damian Kęska <damian@pantheraframework.org>
+     */
+    public function testBuiltinModifierInArray()
+    {
+        $this->setupRainTPL4();
+        $this->engine->assign('array', array('test'));
+        $this->autoAssertEquals();
+    }
+
+    /**
+     * Python-like in operator test for assotiative array (as RainTPL modificator)
+     *
+     * <code>{"test"|in:$array}</code>
+     * <expects>1</expects>
+     *
+     * @author Damian Kęska <damian@pantheraframework.org>
+     */
+    public function testBuiltinModifierInAssocArray()
+    {
+        $this->setupRainTPL4();
+        $this->engine->assign('array', array(
+            'test' => true
+        ));
+        $this->autoAssertEquals();
+    }
 }
