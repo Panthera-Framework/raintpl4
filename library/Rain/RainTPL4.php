@@ -112,8 +112,35 @@ class RainTPL4
         // @debug Damian Kęska
         //$this->config['pluginsEnabled'][] = 'pseudoSandboxing';
 
+        /**
+         * str_replace modifier
+         *
+         * @param string $string String to operate on
+         * @param string $from Input to replace
+         * @param string $to Replacement
+         *
+         * @author Damian Kęska <damian@pantheraframework.org>
+         * @return string
+         */
         $this->modifiers['replace'] = function ($string, $from, $to) {
             return str_replace($from, $to, $string);
+        };
+
+        /**
+         * Cuts of a string to a selected length limit appending ending string, eg. "..."
+         *
+         * @param $inputString Input string to cut off
+         * @param int $limit Char limit
+         * @param string $ending Ending string
+         *
+         * @author Damian Kęska <damian@pantheraframework.org>
+         * @return string
+         */
+        $this->modifiers['cut'] = function ($inputString, $limit = 32, $ending = '...') {
+            if (strlen($inputString) <= $limit)
+                return $inputString;
+
+            return substr($inputString, 0, ($limit - strlen($ending))) . $ending;
         };
     }
 
