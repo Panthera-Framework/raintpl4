@@ -92,6 +92,15 @@ class RainTPL4
     );
 
     /**
+     * List of modifier functions
+     *
+     * @var array
+     */
+    public $modifiers = array(
+
+    );
+
+    /**
      * Constructor
      *
      * @author Damian Kęska <damian@pantheraframework.org>
@@ -102,6 +111,10 @@ class RainTPL4
 
         // @debug Damian Kęska
         //$this->config['pluginsEnabled'][] = 'pseudoSandboxing';
+
+        $this->modifiers['replace'] = function ($string, $from, $to) {
+            return str_replace($from, $to, $string);
+        };
     }
 
     /**

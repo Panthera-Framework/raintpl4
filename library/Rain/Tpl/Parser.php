@@ -76,6 +76,15 @@ class Parser
     );
 
     /**
+     * List of modifier functions
+     *
+     * @var array
+     */
+    public $modifiers = array(
+
+    );
+
+    /**
      * Constructor
      *
      * @param RainTPL4|string|null $tplInstance Pass RainTPL4 instance to use its configuration. If not, then please set $this->config manually.
@@ -93,6 +102,7 @@ class Parser
             $this->registeredTags = $tplInstance->registeredTags;
             $this->tags = array_merge($this->tags, $tplInstance->tags);
             $this->blockParserCallbacks = array_merge($this->blockParserCallbacks, $tplInstance->blockParserCallbacks);
+            $this->modifiers = array_merge($this->modifiers, $tplInstance->modifiers);
         }
 
         $this->executeEvent('parser.__construct', $tplInstance);
@@ -1898,6 +1908,9 @@ class Parser
             $args = explode(':', str_replace('::', '\@;;', $function));
 
             // our result string
+            if (isset($this->modifiers[$args[0]]))
+                $args[0] = '$this->modifiers["' .$args[0]. '"]';
+
             $result = $args[0]. '(' .$result;
 
             foreach ($args as $i => $arg)
