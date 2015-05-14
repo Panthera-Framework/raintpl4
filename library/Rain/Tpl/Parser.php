@@ -890,7 +890,7 @@ class Parser
      * key: k
      *
      * @param string $tagBody
-     * @author Damian Kęska <damian.keska@fino.pl>
+     * @author Damian Kęska <damian@pantheraframework.org>
      * @return array
      */
     protected function parseTagArguments($tagBody)
