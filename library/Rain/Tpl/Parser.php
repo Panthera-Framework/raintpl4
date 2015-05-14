@@ -1349,7 +1349,7 @@ class Parser
 			if ($endingQuotePos === false)
 			{
 				$context = $this->findLine($blockIndex, $blockPositions, $code);
-				throw new SyntaxException('Unclosed ' . $char . ' quote string in fragment "' . $body . '"', 64, $context['line'], $templateFilePath);
+				throw new SyntaxException('Unclosed ' . $char . ' quote string in fragment "' . $body . '"', 64, null, $context['line'], $templateFilePath);
 			}
 
 			/**
