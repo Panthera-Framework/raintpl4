@@ -72,7 +72,5 @@ class SyntaxOperatorsTest extends RainTPLTestCase
             'test',
         ));
         $this->autoAssertEquals();
-
-        exit;
     }
 }
