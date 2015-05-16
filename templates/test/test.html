@@ -97,5 +97,9 @@
 
     <h2>Custom modificators</h2>
     {"This is not working correctly"|replace:"is not working correctly":"is working perfectly"}
+
+    <h2>Python-like "in" operator</h2>
+    {$array=array('test', '123')}
+    {noparse}<b>{if "test" in $array}"test" found in array{/if}</b>{/noparse} = {if "test" in $array}"test" found in array{/if}
 </body>
 </html>
