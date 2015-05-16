@@ -1665,7 +1665,7 @@ class Parser
      * @author Damian Kęska <damian@pantheraframework.org>
      * @return null|void
      */
-    protected function functionBlockParser(&$tagData, &$part, &$tag)
+    protected function functionBlockParser(&$tagData, &$part, &$tag, $templateFilePath, $blockIndex, $blockPositions, $code, &$passAllBlocksTo, $lowerPart)
     {
 		$isString = in_array(substr($part, 1, 1), array("'", '"'));
 
@@ -1724,7 +1724,7 @@ class Parser
 
         // for {"string"|test} syntax there is simpler way
         if ($isString)
-            $body = $this->parseModifiers($function);
+            $body = $this->parseStrings($function, $blockIndex, $blockPositions, $code, $templateFilePath);
         else
             $body = $this->varReplace($function, 'auto', false, false, true);
 

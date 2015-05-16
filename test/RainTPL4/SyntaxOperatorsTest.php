@@ -73,4 +73,21 @@ class SyntaxOperatorsTest extends RainTPLTestCase
         ));
         $this->autoAssertEquals();
     }
+
+    /**
+     * "in" comparsion operator in functionBlockParser
+     *
+     * <code>{"test" in $array}</code>
+     * <expects>1</expects>
+     *
+     * @author Damian Kęska <damian@pantheraframework.org>
+     */
+    public function testInArrayInFunctionBlocks()
+    {
+        $this->setupRainTPL4();
+        $this->engine->assign('array', array(
+            'test',
+        ));
+        $this->autoAssertEquals();
+    }
 }
