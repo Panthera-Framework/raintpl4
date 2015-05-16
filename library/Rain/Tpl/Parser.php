@@ -1338,6 +1338,10 @@ class Parser
 		// let's search for a pair of quotes, $quotePos and $endingQuotePos
 		do
 		{
+            // include patchs applied in this loop in previous iterations
+            if ($quotePos > strlen($body))
+                break;
+
 			$char = null;
 			$quotePos = self::strposa($body, array('"', "'"), $quotePos, 'min', $char);
 
@@ -1351,6 +1355,47 @@ class Parser
 				$context = $this->findLine($blockIndex, $blockPositions, $code);
 				throw new SyntaxException('Unclosed ' . $char . ' quote string in fragment "' . $body . '"', 64, null, $context['line'], $templateFilePath);
 			}
+
+            $quotesContent = substr($body, $quotePos, (($endingQuotePos - $quotePos) + 1));
+
+            /**
+             * In operator support for strings
+             */
+            if (stripos($body, $quotesContent. ' in ') !== false)
+            {
+                // $quotesContent + " in "
+                $inChar = substr($body, $endingQuotePos + 5, 1);
+
+                /**
+                 * Detect haystack type - string or variable
+                 */
+                if ($inChar == '"' or $inChar == "'")
+                {
+                    $haystackClosing = strpos($body, $inChar, $quotesContent + 5);
+
+                } elseif ($inChar == '$') {
+                    $haystackClosing = self::strposaNotInQuotes($body, array(
+                        ' ', '}', '&', '||', '(', ')',
+                    ), $endingQuotePos + 5);
+
+                } else {
+                    $context = $this->findLine($blockIndex, $blockPositions, $code);
+                    throw new SyntaxException('Invalid syntax, expected $ or quote for "in" syntax, found in "' .$code. '"', 65, null, $context['line'], $templateFilePath);
+                }
+
+                // if the closing position is at the end of the string
+                if ($haystackClosing === false)
+                    $haystackClosing = strlen($body);
+
+                $haystack = substr($body, $endingQuotePos + 5, ($haystackClosing - ($endingQuotePos + 5)));
+                $replacement = '($this->modifiers["in"](' .$quotesContent. ', ' .$haystack.'))';
+                $body = substr_replace($body, $replacement, $quotePos, ($haystackClosing - $quotePos));
+
+                // include difference made by substr_replace
+                // $replacement - new
+                // ($haystackClosing - $quotePos) - old content
+                $quotePos = ($quotePos + strlen($replacement));
+            }
 
 			/**
 			 * Modificators support
@@ -1391,7 +1436,11 @@ class Parser
 					}
 
 					$modificator = substr($body, $quotePos, ($endingChar - $quotePos));
-					$body = substr_replace($body, $this->parseModifiers($modificator, false), $quotePos, ($endingChar - $quotePos));
+                    $replacement = $this->parseModifiers($modificator, false);
+					$body = substr_replace($body, $replacement, $quotePos, ($endingChar - $quotePos));
+
+                    // include substr_replace difference
+                    $quotePos = $endingQuotePos = ($quotePos + strlen($replacement));
 				}
 			}
 
