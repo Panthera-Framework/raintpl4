@@ -3,6 +3,7 @@
  * Test {"string"|modifier} syntax
  *
  * @author Damian Kęska <damian.keska@fingo.pl>
+ * @author Mateusz Warzyński <lxnmen@gmail.com>
  */
 class StringsTest extends RainTPLTestCase
 {
@@ -40,5 +41,22 @@ class StringsTest extends RainTPLTestCase
     {
         $this->setupRainTPL4();
         $this->assertEquals('te', $this->engine->drawString('{trim(substr(" test ", 0, 2))}', true));
+    }
+
+    /**
+     * Escaping quotes with "\" test
+     *
+     * <code>{if "key1\""|in:$arrayVariable}OK{/if}</code>
+     * <expects>OK</expects>
+     *
+     * @author Mateusz Warzyński <lxnmen@gmail.com>
+     */
+
+    public function testEscapedQuotes()
+    {
+        $this->setupRainTPL4();
+        $this->engine->assign('arrayVariable', array('key1"' => 'value1'));
+
+        $this->autoAssertEquals();
     }
 }
