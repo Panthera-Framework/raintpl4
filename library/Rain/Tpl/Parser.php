@@ -1371,12 +1371,13 @@ class Parser
                  */
                 if ($inChar == '"' or $inChar == "'")
                 {
-                    $haystackClosing = strpos($body, $inChar, $quotesContent + 5);
+                    $haystackClosing = strpos($body, $inChar, $endingQuotePos + 6);
 
                 } elseif ($inChar == '$') {
+
                     $haystackClosing = self::strposaNotInQuotes($body, array(
                         ' ', '}', '&', '||', '(', ')',
-                    ), $endingQuotePos + 5);
+                    ), $endingQuotePos + 6);
 
                 } else {
                     $context = $this->findLine($blockIndex, $blockPositions, $code);
@@ -1387,14 +1388,20 @@ class Parser
                 if ($haystackClosing === false)
                     $haystackClosing = strlen($body);
 
-                $haystack = substr($body, $endingQuotePos + 5, ($haystackClosing - ($endingQuotePos + 5)));
-                $replacement = '($this->modifiers["in"](' .$quotesContent. ', ' .$haystack.'))';
-                $body = substr_replace($body, $replacement, $quotePos, ($haystackClosing - $quotePos));
+                $haystack = substr($body, $endingQuotePos + 5, ($haystackClosing - ($endingQuotePos + 4)));
+
+                if ($inChar == '$')
+                {
+                    $haystack = $this->varReplace($haystack, 'auto', false);
+                }
+
+                $replacement = '($this->modifiers["in"](' .$quotesContent. ', ' .$haystack. '))';
+                $body = substr_replace($body, $replacement, $quotePos, (($haystackClosing - $quotePos) + 1));
 
                 // include difference made by substr_replace
                 // $replacement - new
                 // ($haystackClosing - $quotePos) - old content
-                $quotePos = ($quotePos + strlen($replacement));
+                $quotePos = $endingQuotePos = ($quotePos + strlen($replacement));
             }
 
 			/**

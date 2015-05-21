@@ -90,4 +90,19 @@ class SyntaxOperatorsTest extends RainTPLTestCase
         ));
         $this->autoAssertEquals();
     }
+
+    /**
+     * "in" comparsion operator for strings only
+     *
+     * <code>{"test" in "dddddddddddd"}, {"b" in "abc"}</code>
+     * <expects>, 1</expects>
+     *
+     * @author Damian Kęska <damian@pantheraframework.org>
+     */
+    public function testStringInString()
+    {
+        $this->setupRainTPL4();
+        //$this->engine->setConfigurationKey('print_parsed_code', true);
+        $this->autoAssertEquals();
+    }
 }
