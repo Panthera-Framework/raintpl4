@@ -1204,18 +1204,22 @@ class Parser
         if ($ending)
         {
             // if tag body is empty eg. {block name="testBlockName"}{/block} then just call existing block
-            if (($blockIndex - 1) === $tagData['lastOpenIndex'])
+            $startPos = explode('|', $blockPositions[$tagData['lastOpenIndex']]);
+            $endPos = explode('|', $blockPositions[$blockIndex]);
+            $codeBetween = substr($code, ($startPos[0] + $startPos[1]), (($endPos[0] - $startPos[0]) - $startPos[1]));
+
+            if (!strlen(trim($codeBetween)))
             {
                 $codeSplit[$tagData['lastOpenIndex']] = '';
-                $part = '<?php if(isset($this->definedBlocks["' .$tagData['args']['name']. '"])){echo $this->definedBlocks["' .$tagData['args']['name']. '"]();}?>';
+                $part = '<?php if(isset($this->definedBlocks["' .$tagData['args']['name']. '"])){echo $this->definedBlocks["' .$tagData['args']['name']. '"](' .var_export($tagData['args'], true). ');}?>';
                 return true;
             }
 
             $part = '<?php };}';
-            $isExtended = isset($this->tagData['include']) && $this->tagData['include']['extends'];
+            $isExtended = isset($this->tagData['include']) && isset($this->tagData['include']['extends']) &&  $this->tagData['include']['extends'];
 
             if (!$isExtended && (!isset($tagData['args']['quiet']) || $tagData['args']['quiet'] != 'true'))
-                $part .= 'echo $this->definedBlocks["' .$tagData['args']['name']. '"]();';
+                $part .= 'echo $this->definedBlocks["' .$tagData['args']['name']. '"](' .var_export($tagData['args'], true). ');';
 
             $part .= '?>';
             return true;
@@ -1232,7 +1236,7 @@ class Parser
             $tagData['args'] = $args;
             $tagData['lastOpenIndex'] = $blockIndex;
 
-            $part = '<?php if(!isset($this->definedBlocks["' .$args['name']. '"])){$this->definedBlocks["' .$args['name']. '"]=function(){$args = ' .var_export($args, true). ';?>';
+            $part = '<?php if(!isset($this->definedBlocks["' .$args['name']. '"])){$this->definedBlocks["' .$args['name']. '"]=function($args){$_blockMeta = ' .var_export($args, true). ' + $args;?>';
             return true;
         }
     }
