@@ -315,14 +315,14 @@ class RainTPL4
      * @event engine.registerTag $tag
      * @return array
      */
-    public function & registerTag($tag, $parse, $function)
+    public function & registerRegexpTag($tag, $parse, $function)
     {
         $this->registeredTags[$tag] = array(
             'parse' => $parse,
             'function' => $function,
         );
 
-        $this->executeEvent('engine.registerTag', $tag);
+        $this->executeEvent('engine.registerRegexpTag', $tag);
         return $this->registeredTags;
     }
 

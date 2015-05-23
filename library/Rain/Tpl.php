@@ -11,6 +11,8 @@ class Tpl extends RainTPL4
 {
     public static $staticConfiguration = array();
     public static $__instances = array();
+    public static $deprecatedRegisteredTags = array();
+    public static $deprecatedPlugins = array();
 
     /**
      * Merge static configuration with object configuration
@@ -112,5 +114,50 @@ class Tpl extends RainTPL4
         }
 
         return $folder;
+    }
+
+    /**
+     * Allows the developer to register a tag.
+     *
+     * @param string $tag nombre del tag
+     * @param regexp $parse regular expression to parse the tag
+     * @param anonymous function $function: action to do when the tag is parsed
+     *
+     * @return array|void
+     */
+    public static function registerTag($tag, $parse, $function)
+    {
+        static::$deprecatedRegisteredTags[$tag] = array(
+            "parse" => $parse,
+            "function" => $function,
+        );
+    }
+
+    /**
+     * Registers a plugin globally.
+     *
+     * @param \Rain\Tpl\IPlugin $plugin
+     * @param string $name name can be used to distinguish plugins of same class.
+     */
+    public static function registerPlugin(Tpl\IPlugin $plugin, $name = '') {
+        $name = (string)$name ?: \get_class($plugin);
+        static::getPlugins()->addPlugin($name, $plugin);
+    }
+    /**
+     * Removes registered plugin from stack.
+     *
+     * @param string $name
+     */
+    public static function removePlugin($name) {
+        static::getPlugins()->removePlugin($name);
+    }
+    /**
+     * Returns plugin container.
+     *
+     * @return \Rain\Tpl\PluginContainer
+     */
+    protected static function getPlugins() {
+        return static::$deprecatedPlugins
+            ?: static::$deprecatedPlugins = new Tpl\PluginContainer();
     }
 }
