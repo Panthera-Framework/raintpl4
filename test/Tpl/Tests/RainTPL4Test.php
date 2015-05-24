@@ -1,6 +1,6 @@
 <?php
 /**
- * Test {"string"|modifier} syntax
+ * RainTPL4 engine tests
  *
  * @author Damian Kęska <damian.keska@fingo.pl>
  */
