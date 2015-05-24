@@ -56,7 +56,24 @@ class StringsTest extends RainTPLTestCase
     {
         $this->setupRainTPL4();
         $this->engine->assign('arrayVariable', array('key1"' => 'value1'));
-
         $this->autoAssertEquals();
+    }
+
+    /**
+     * Test quotes escaping of internal function Parser::strposa()
+     *
+     * @author Damian Kęska <damian@pantheraframework.org>
+     */
+    public function testStrposaInternalFunction()
+    {
+        $pos = -1;
+        for ($i = 0; $i < 3; $i++)
+        {
+            $pos = \Rain\Tpl\Parser::strposa('"key1\""|in:$arrayVariable', array('"', "'"), $pos + 1);
+
+            $positions[] = $pos;
+        }
+
+        $this->assertEquals(array(0, 7, false), $positions);
     }
 }

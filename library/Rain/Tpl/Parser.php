@@ -1342,7 +1342,7 @@ class Parser
 		// let's search for a pair of quotes, $quotePos and $endingQuotePos
 		do
 		{
-            // include patchs applied in this loop in previous iterations
+            // include paths applied in this loop in previous iterations
             if ($quotePos > strlen($body))
                 break;
 
@@ -1352,7 +1352,7 @@ class Parser
 			if ($quotePos === false)
 				break;
 
-			$endingQuotePos = strpos($body, $char, ($quotePos + 1));
+            $endingQuotePos = self::strposa($body, array($char), ($quotePos + 1));
 
 			if ($endingQuotePos === false)
 			{
@@ -2149,10 +2149,36 @@ class Parser
 
         $chr = array();
         $chrPos = array();
+        $haystackLen = strlen($haystack);
 
         foreach($needles as $needle)
         {
-            $res = strpos($haystack, $needle, $offset);
+            // ignore escaped characters
+            if (strlen($needle) === 1)
+            {
+                $from = $offset;
+
+                while (true)
+                {
+                    $res = strpos($haystack, $needle, $from);
+
+                    // found / not found / out of range
+                    if ($res === 0 || $res === false || $from + 1 > $haystackLen)
+                        break;
+
+                    if ($res > 0)
+                    {
+                        $from = $res + 1;
+
+                        // if escaped character not found then current position would be ok, if not search for next
+                        if ($haystack[$res - 1] != "\\")
+                            break;
+                    }
+                }
+
+            } else
+                $res = strpos($haystack, $needle, $offset);
+
             if ($res !== false) {$chr[$needle] = $res; $chrPos[$res] = $needle;};
         }
 
@@ -2163,7 +2189,7 @@ class Parser
     }
 
     /**
-     * Find all substring occurences in a string
+     * Find all substring occurrences in a string
      *
      * @param string $haystack Input string
      * @param string $needle Search string

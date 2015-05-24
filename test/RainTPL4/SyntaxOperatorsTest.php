@@ -7,7 +7,7 @@
 class SyntaxOperatorsTest extends RainTPLTestCase
 {
     /**
-     * "in" comparsion operator test
+     * "in" comparison operator test
      *
      * <code>{if "test" in $array}Contains{else}Not containing :({/if}</code>
      * <expects>Contains</expects>
@@ -24,7 +24,7 @@ class SyntaxOperatorsTest extends RainTPLTestCase
     }
 
     /**
-     * "in" comparsion operator test
+     * "in" comparison operator test
      *
      * <code>{if "test" in $array and 2 > 1}Contains{else}Not containing :({/if}</code>
      * <expects>Contains</expects>
@@ -41,7 +41,7 @@ class SyntaxOperatorsTest extends RainTPLTestCase
     }
 
     /**
-     * "in" comparsion operator test with quotes, function, logic "AND" operator
+     * "in" comparison operator test with quotes, function, logic "AND" operator
      *
      * <code>{if "test" in $array and strtolower("this is a test")}Contains{else}Not containing :({/if}</code>
      * <expects>Contains</expects>
@@ -58,7 +58,7 @@ class SyntaxOperatorsTest extends RainTPLTestCase
     }
 
     /**
-     * "in" comparsion operator test with modifier
+     * "in" comparison operator test with modifier
      *
      * <code>{if "test" in $array and "THIS IS A TEST"|strtolower}Contains{else}Not containing :({/if}</code>
      * <expects>Contains</expects>
@@ -75,7 +75,7 @@ class SyntaxOperatorsTest extends RainTPLTestCase
     }
 
     /**
-     * "in" comparsion operator in functionBlockParser
+     * "in" comparison operator in functionBlockParser
      *
      * <code>{"test" in $array}</code>
      * <expects>1</expects>
@@ -92,7 +92,7 @@ class SyntaxOperatorsTest extends RainTPLTestCase
     }
 
     /**
-     * "in" comparsion operator for strings only
+     * "in" comparison operator for strings only
      *
      * <code>{"test" in "dddddddddddd"}, {"b" in "abc"}</code>
      * <expects>, 1</expects>
