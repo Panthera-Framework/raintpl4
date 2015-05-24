@@ -76,4 +76,31 @@ class StringsTest extends RainTPLTestCase
 
         $this->assertEquals(array(0, 7, false), $positions);
     }
+
+    /**
+     * Parser::getQuotesPositions() - detects substrings (strings in quotes) in a string
+     *
+     * <code>"This is a test string", "This is a test string with \"escaped\" quotes inside", 'Test', 'Another test\'s'</code>
+     * <data-string0>"This is a test string"</data-string0>
+     * <data-string1>"This is a test string with \"escaped\" quotes inside"</data-string1>
+     * <data-string2>'Test'</data-string2>
+     * <data-string3>'Another test\'s'</data-string3>
+     *
+     * @author Damian Kęska <damian@pantheraframework.org>
+     */
+    public function testgetQuotesPositionsInternalFunction()
+    {
+        $code = $this->getTestCodeFromPHPDoc();
+        $quotes = \Rain\Tpl\Parser::getQuotesPositions($code);
+
+        // 4 pairs of quotes
+        $this->assertEquals(4, count($quotes));
+
+        // verify strings inside
+        foreach ($quotes as $key => $string)
+        {
+            $stringContent = substr($code, $string[1], (($string[2] - $string[1]) + 1));
+            $this->assertEquals($this->getExampleDataFromPHPDoc('string' .$key), $stringContent);
+        }
+    }
 }

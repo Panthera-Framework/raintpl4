@@ -825,7 +825,7 @@ class Parser
 
             if ($pos !== false)
             {
-                $ending = strpos($code, $char, ($pos + 1));
+                $ending = self::strposa($code, array($char), ($pos + 1));
 
                 if ($ending !== false)
                 {
