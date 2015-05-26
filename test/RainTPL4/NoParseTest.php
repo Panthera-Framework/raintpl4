@@ -9,8 +9,8 @@ class NoParseTest extends RainTPLTestCase
     /**
      * Testcase for tag {literal}
      *
-     * <code>{literal}blablabla{/literal}something</code>
-     * <expects>something</expects>
+     * <code>{literal}{if 1 > 2}{/literal}something</code>
+     * <expects>{if 1 > 2}something</expects>
      *
      * @author Mateusz Warzyński <lxnmen@gmail.com>
      */
@@ -24,7 +24,7 @@ class NoParseTest extends RainTPLTestCase
      * Testcase for tag {noparse}
      *
      * <code>{noparse}blablabla{/noparse}something</code>
-     * <expects>something</expects>
+     * <expects>blablablasomething</expects>
      *
      * @author Mateusz Warzyński <lxnmen@gmail.com>
      */
