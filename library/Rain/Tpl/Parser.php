@@ -1904,11 +1904,11 @@ class Parser
                 $keyEnds = self::strposa($part, array(
                     '=>',
                     ' ',
-                ), $asSyntax);
+                ), ($asSyntax + 4));
 
                 if ($keyEnds !== false)
                 {
-                    $arguments['key'] = trim(substr($part, ($asSyntax + 4), ($keyEnds - $asSyntax) - 4));
+                    $arguments['key'] = trim(substr($part, ($asSyntax+4), ($keyEnds-$asSyntax) - 4));
 
                     // between: $ and [space] or } (tag ending or arguments separator)
                     $valueStarts = strpos($part, '$', $keyEnds);
