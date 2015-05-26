@@ -69,4 +69,36 @@ class LoopTest extends RainTPLTestCase
         $this->engine->assign('arrayVariable', array('key1' => 'value1'));
         $this->autoAssertEquals();
     }
+
+    /**
+     * Testcase for {continue} in foreach loop
+     *
+     * <code>{foreach from="$arrayVariable" as $number}{if $number == 2}{continue}{/if}{$number}{/foreach}</code>
+     * <expects>1345</expects>
+     *
+     * @author Mateusz Warzyński <lxnmen@gmail.com>
+     */
+    public function testForeachContinue()
+    {
+        $this->setupRainTPL4();
+
+        $this->engine->assign('arrayVariable', array(1, 2, 3, 4, 5));
+        $this->autoAssertEquals();
+    }
+
+    /**
+     * Testcase for {continue} in foreach loop
+     *
+     * <code>{foreach from="$arrayVariable" as $number}{if $number == 3}{break}{/if}{$number}{/foreach}</code>
+     * <expects>12</expects>
+     *
+     * @author Mateusz Warzyński <lxnmen@gmail.com>
+     */
+    public function testForeachBreak()
+    {
+        $this->setupRainTPL4();
+
+        $this->engine->assign('arrayVariable', array(1, 2, 3, 4, 5));
+        $this->autoAssertEquals();
+    }
 }
