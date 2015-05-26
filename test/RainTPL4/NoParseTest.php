@@ -1,11 +1,39 @@
 <?php
 /**
- * Comment testcases
+ * Escaping parts of code testcases
  *
  * @author Mateusz Warzyński <lxnmen@gmail.com>
  */
-class CommentTest extends RainTPLTestCase
+class NoParseTest extends RainTPLTestCase
 {
+    /**
+     * Testcase for tag {literal}
+     *
+     * <code>{literal}blablabla{/literal}something</code>
+     * <expects>something</expects>
+     *
+     * @author Mateusz Warzyński <lxnmen@gmail.com>
+     */
+    public function testLiteral()
+    {
+        $this->setupRainTPL4();
+        $this->autoAssertEquals();
+    }
+
+    /**
+     * Testcase for tag {noparse}
+     *
+     * <code>{noparse}blablabla{/noparse}something</code>
+     * <expects>something</expects>
+     *
+     * @author Mateusz Warzyński <lxnmen@gmail.com>
+     */
+    public function testNoParse()
+    {
+        $this->setupRainTPL4();
+        $this->autoAssertEquals();
+    }
+
     /**
      * Testcase for comment - {* This is a test comment *}
      *

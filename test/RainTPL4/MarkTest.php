@@ -19,32 +19,4 @@ class MarkTest extends RainTPLTestCase
         $this->setupRainTPL4();
         $this->autoAssertEquals();
     }
-
-    /**
-     * Testcase for tag {literal}
-     *
-     * <code>{literal}blablabla{/literal}something</code>
-     * <expects>something</expects>
-     *
-     * @author Mateusz Warzyński <lxnmen@gmail.com>
-     */
-    public function testLiteral()
-    {
-        $this->setupRainTPL4();
-        $this->autoAssertEquals();
-    }
-
-    /**
-     * Testcase for tag {noparse}
-     *
-     * <code>{noparse}blablabla{/noparse}something</code>
-     * <expects>something</expects>
-     *
-     * @author Mateusz Warzyński <lxnmen@gmail.com>
-     */
-    public function testNoparse()
-    {
-        $this->setupRainTPL4();
-        $this->autoAssertEquals();
-    }
 }
