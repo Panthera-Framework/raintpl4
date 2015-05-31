@@ -1948,19 +1948,44 @@ class Parser
      *
      * @throws SyntaxException
      * @author Damian Kęska <damian@pantheraframework.org>
+     * @author Mateusz Warzyński <lxnmen@gmail.com>
      * @return null|void
      */
     protected function loop_breakBlockParser(&$tagData, &$part, &$tag, $templateFilePath, $blockIndex, $blockPositions, $code, &$passAllBlocksTo, $lowerPart)
     {
-        if ($lowerPart == '{break}')
-        {
-            if (!isset($this->tagData['loop']['level']) || $this->tagData['loop']['level'] < 1)
-            {
+        $lowerPart = str_replace(" ", '', $lowerPart);
+
+        if (substr($lowerPart, 0, 6) == '{break') {
+            if (!isset($this->tagData['loop']['level']) || $this->tagData['loop']['level'] < 1) {
                 $context = $this->findLine($blockIndex, $blockPositions, $code);
                 throw new SyntaxException('Trying to use {break} outside of a loop', 6, null, $context['line'], $templateFilePath);
             }
 
-            $part = '<?php break;?>';
+            $endChar = strpos($lowerPart, "}");
+
+            if ($endChar === 6)
+            {
+                $part = '<?php break;?>';
+            }
+            elseif ($endChar > 6)
+            {
+                $breakLevel = intval(substr($lowerPart, 6, strlen($lowerPart)-7));
+                if ($breakLevel == 0) {
+                    $context = $this->findLine($blockIndex, $blockPositions, $code);
+                    throw new SyntaxException('Trying to use {break $level} with nonnumerical level', 6, null, $context['line'], $templateFilePath);
+                }
+
+                if ($breakLevel > $this->tagData['loop']['level']) {
+                    $context = $this->findLine($blockIndex, $blockPositions, $code);
+                    throw new SyntaxException('Trying to {break} too many loops', 6, null, $context['line'], $templateFilePath);
+                }
+
+                $part = '<?php break '.strval($breakLevel).';?>';
+            }
+            else {
+                $context = $this->findLine($blockIndex, $blockPositions, $code);
+                throw new SyntaxException('Trying to use {break} with invalid way - cannot find ending char `}`', 6, null, $context['line'], $templateFilePath);
+            }
         }
     }
 
@@ -1972,20 +1997,45 @@ class Parser
      * @param $tag
      * @throws SyntaxException
      * @author Damian Kęska <damian@pantheraframework.org>
+     * @author Mateusz Warzyński <lxnmen@gmail.com>
      * @return null|void
      */
     protected function loop_continueBlockParser(&$tagData, &$part, &$tag, $templateFilePath, $blockIndex, $blockPositions, $code, &$passAllBlocksTo, $lowerPart)
     {
-        if ($lowerPart === '{continue}')
+        $lowerPart = str_replace(" ", '', $lowerPart);
+
+        if (substr($lowerPart, 0 , 9) === '{continue')
         {
-            if (!isset($this->tagData['loop']['level']) || $this->tagData['loop']['level'] < 1)
-            {
+            if (!isset($this->tagData['loop']['level']) || $this->tagData['loop']['level'] < 1) {
                 $context = $this->findLine($blockIndex, $blockPositions, $code);
                 throw new SyntaxException('Trying to use {continue} outside of a loop', 6, null, $context['line'], $templateFilePath);
             }
 
-            $part = '<?php continue;?>';
-            return true;
+            $endChar = strpos($lowerPart, "}");
+
+            if ($endChar === 9)
+            {
+                $part = '<?php continue;?>';
+            }
+            elseif ($endChar > 9)
+            {
+                $continueLevel = intval(substr($lowerPart, 9, strlen($lowerPart)-10));
+                if ($continueLevel == 0) {
+                    $context = $this->findLine($blockIndex, $blockPositions, $code);
+                    throw new SyntaxException('Trying to use {continue $level} with nonnumerical level', 6, null, $context['line'], $templateFilePath);
+                }
+
+                if ($continueLevel > $this->tagData['loop']['level']) {
+                    $context = $this->findLine($blockIndex, $blockPositions, $code);
+                    throw new SyntaxException('Trying to {continue} too many loops', 6, null, $context['line'], $templateFilePath);
+                }
+
+                $part = '<?php continue '.strval($continueLevel).';?>';
+            }
+            else {
+                $context = $this->findLine($blockIndex, $blockPositions, $code);
+                throw new SyntaxException('Trying to use {continue} with invalid way - cannot find ending char `}`', 6, null, $context['line'], $templateFilePath);
+            }
         }
     }
 
