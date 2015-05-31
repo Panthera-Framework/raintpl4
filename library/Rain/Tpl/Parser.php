@@ -1842,6 +1842,7 @@ class Parser
      *
      * @throws SyntaxException
      * @author Damian Kęska <damian@pantheraframework.org>
+     * @author Mateusz Warzyński <lxnmen@gmail.com>
      * @return null
      */
     protected function loopBlockParser(&$tagData, &$part, &$tag, $templateFilePath, $blockIndex, $blockPositions, $code, &$passAllBlocksTo, $lowerPart)
@@ -1918,6 +1919,26 @@ class Parser
                         $valueEnds = self::strposa($part, array(' ', '}'), $valueStarts);
                         $arguments['value'] = substr($part, ($valueStarts + 1), ($valueEnds - $valueStarts) - 1);
                     }
+                }
+            }
+        }
+
+        // RainTPL3/PHP syntax support: {loop="$array" as $value} (only if there are no key and value arguments - to gain performance)
+        if (!isset($arguments['key']) && !isset($arguments['value']) && !isset($arguments['item']))
+        {
+            $asSyntax = strpos($part, 'as $');
+
+            if ($asSyntax !== false)
+            {
+                // the key is between "as $" and "}"
+                $keyEnds = self::strposa($part, array(
+                    ' ',
+                    '}'
+                ), ($asSyntax + 4));
+
+                if ($keyEnds !== false)
+                {
+                    $arguments['value'] = trim(substr($part, ($asSyntax+4), ($keyEnds-$asSyntax) - 4));
                 }
             }
         }
