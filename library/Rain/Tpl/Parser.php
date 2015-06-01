@@ -419,7 +419,13 @@ class Parser
                 $starts = substr($part, 1, 1);
 
                 if (substr($part, 0, 1) !== '{' || $starts == ' ' || $starts == "\n" || $starts == "\t"/* || ($this->getConfigurationKey('ignore_single_quote') && $starts == "'") */|| strpos($part, "\n") !== false)
+                {
+                    if ($passAllBlocksTo == 'comment')
+                    {
+                        $codeSplit[$index] = '';
+                    }
                     continue;
+                }
 
                 // tag parser found?
                 $found = false;
@@ -1555,19 +1561,26 @@ class Parser
      */
     protected function commentBlockParser(&$tagData, &$part, &$tag, $templateFilePath, $blockIndex, $blockPositions, $code, &$passAllBlocksTo, $lowerPart)
     {
-        if (substr($lowerPart, -2) === '*}' || $lowerPart === '{/*}' || $lowerPart === '{/ignore}')
+        if (substr($lowerPart, 0, 2) === '{*' || $lowerPart === '{*}' || $lowerPart === '{ignore}') {
+            $tagData['level']++;
+            $tagData['count']++;
+            $passAllBlocksTo = 'comment';
+            $part = '';
+
+            $asd1 = substr($lowerPart, -2);
+            $asd2 = strlen($lowerPart);
+
+            if (substr($lowerPart, -2) === '*}' && strlen($lowerPart) !== 3)
+                $passAllBlocksTo = '';
+
+            return true;
+        } elseif (substr($lowerPart, -2) === '*}' || $lowerPart === '{/*}' || $lowerPart === '{/ignore}')
         {
             $tagData['level']--;
             $passAllBlocksTo = '';
             $part = '';
             return true;
 
-        } elseif (substr($lowerPart, 0, 2) === '{*' || $lowerPart === '{*}' || $lowerPart === '{ignore}') {
-            $tagData['level']++;
-            $tagData['count']++;
-            $passAllBlocksTo = 'comment';
-            $part = '';
-            return true;
         }
 
         // erase all inside a comment block
