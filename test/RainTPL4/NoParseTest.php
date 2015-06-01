@@ -66,4 +66,26 @@ class NoParseTest extends RainTPLTestCase
         $this->setupRainTPL4();
         $this->assertEquals('something', $this->engine->drawString("{ignore}This is a test comment #3{/ignore}something", true));
     }
+
+    /**
+     * Testcase for comment, loading variables inside comment
+     *
+     * @author Mateusz Warzyński <lxnmen@gmail.com>
+     */
+    public function testCommentFourth()
+    {
+        $this->setupRainTPL4();
+        $this->assertEquals('something', $this->engine->drawString("{*}{$hiddenValue}{/*}something", true));
+    }
+
+    /**
+     * Testcase for comment, different tags as one comment
+     *
+     * @author Mateusz Warzyński <lxnmen@gmail.com>
+     */
+    public function testCommentFifth()
+    {
+        $this->setupRainTPL4();
+        $this->assertEquals('something', $this->engine->drawString("{*}I am special!{/ignore}something", true));
+    }
 }
