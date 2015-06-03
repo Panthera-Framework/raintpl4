@@ -418,14 +418,8 @@ class Parser
                 // run tag parsers only on tags, exclude "{ " from parsing
                 $starts = substr($part, 1, 1);
 
-                if (substr($part, 0, 1) !== '{' || $starts == ' ' || $starts == "\n" || $starts == "\t"/* || ($this->getConfigurationKey('ignore_single_quote') && $starts == "'") */|| strpos($part, "\n") !== false)
-                {
-                    if ($passAllBlocksTo == 'comment')
-                    {
-                        $codeSplit[$index] = '';
-                    }
+                if (!$passAllBlocksTo && (substr($part, 0, 1) !== '{' || $starts == ' ' || $starts == "\n" || $starts == "\t"/* || ($this->getConfigurationKey('ignore_single_quote') && $starts == "'") */|| strpos($part, "\n") !== false))
                     continue;
-                }
 
                 // tag parser found?
                 $found = false;
