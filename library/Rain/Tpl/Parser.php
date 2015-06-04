@@ -1787,8 +1787,14 @@ class Parser
             elseif (isset($args['path']))
                 $includeTemplate = $args['path'];
             else {
-                $context = $this->findLine($blockIndex, $blockPositions, $code);
-                throw new SyntaxException('Cannot find path attribute for {include} tag, expecting "file" or "path" attribute. Example: {include file="/path/to/file"}', 4, null, $context['line'], $templateFilePath);
+
+                // {include test.tpl}, {include "test.tpl"}
+                if (self::strposa($tagBody, array('"', "'", '/', '.tpl')) !== false)
+                    $includeTemplate = trim($tagBody, '"\' ');
+                else {
+                    $context = $this->findLine($blockIndex, $blockPositions, $code);
+                    throw new SyntaxException('Cannot find path attribute for {include} tag, expecting "file" or "path" attribute. Example: {include file="/path/to/file"}', 4, null, $context['line'], $templateFilePath);
+                }
             }
         }
 

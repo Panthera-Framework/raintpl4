@@ -25,4 +25,30 @@ class IncludeTest extends RainTPLTestCase
         //$this->engine->setConfigurationKey('print_parsed_code', true);
         $this->assertEquals('Header loaded successfully!', $this->engine->drawString('{include file="' .$path. '/includes/header.html"}', true));
     }
+
+    /**
+     * {include path/to/test.html} - without quotes
+     *
+     * @author Damian Kęska <damian@pantheraframework.org>
+     */
+    public function testMoreNaturalSyntax()
+    {
+        $this->setupRainTPL4();
+        $path = realpath(__DIR__. '/../../templates/');
+        //$this->engine->setConfigurationKey('print_parsed_code', true);
+        $this->assertEquals('Header loaded successfully!', $this->engine->drawString('{include ' .$path. '/includes/header.html}', true));
+    }
+
+    /**
+     * {include "path/to/test.html"} - with quotes
+     *
+     * @author Damian Kęska <damian@pantheraframework.org>
+     */
+    public function testMoreNaturalSyntaxWithQuotes()
+    {
+        $this->setupRainTPL4();
+        $path = realpath(__DIR__. '/../../templates/');
+        //$this->engine->setConfigurationKey('print_parsed_code', true);
+        $this->assertEquals('Header loaded successfully!', $this->engine->drawString('{include "' .$path. '/includes/header.html"}', true));
+    }
 }
