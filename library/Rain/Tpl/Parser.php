@@ -2052,11 +2052,11 @@ class Parser
         foreach ($this->registeredTags as $pattern => $customTag)
         {
             $matches = null;
-            preg_match($pattern, $part, $matches);
+            preg_match($customTag['parse'], $part, $matches);
 
-            if (is_callable($customTag))
+            if ($matches && is_callable($customTag['function']))
             {
-                $return = $customTag($tagData, $part, $tag, $templateFilePath, $blockIndex, $blockPositions, $code, $passAllBlocksTo, $lowerPart, $matches);
+                $return = $customTag['function']($tagData, $part, $tag, $templateFilePath, $blockIndex, $blockPositions, $code, $passAllBlocksTo, $lowerPart, $matches);
 
                 if ($return === true)
                     return true;
