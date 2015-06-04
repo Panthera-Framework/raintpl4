@@ -52,7 +52,6 @@ class Parser
         'function' => true, // {function} RainTPL4
         'loop' => true, // {loop}, {foreach} RainTPL4
         'loop_break' => true, // RainTPL4
-        'loop_continue' => true, // RainTPL4
         'include' => true, // RainTPL4
         'capture' => true, // RainTPL4
         'block' => true, // {block} RainTPL4
@@ -1968,7 +1967,7 @@ class Parser
     }
 
     /**
-     * {break} instruction, could be used only inside of {foreach} or {loop} blocks
+     * {break} and {continue} instructions, could be used only inside of {foreach} or {loop} blocks
      *
      * @param $tagData
      * @param $part
@@ -1983,86 +1982,51 @@ class Parser
     {
         $lowerPart = str_replace(" ", '', $lowerPart);
 
-        if (substr($lowerPart, 0, 6) == '{break') {
-            if (!isset($this->tagData['loop']['level']) || $this->tagData['loop']['level'] < 1) {
-                $context = $this->findLine($blockIndex, $blockPositions, $code);
-                throw new SyntaxException('Trying to use {break} outside of a loop', 6, null, $context['line'], $templateFilePath);
-            }
+        $recognizedSyntax = null;
 
-            $endChar = strpos($lowerPart, "}");
-
-            if ($endChar === 6)
-            {
-                $part = '<?php break;?>';
-            }
-            elseif ($endChar > 6)
-            {
-                $breakLevel = intval(substr($lowerPart, 6, strlen($lowerPart)-7));
-                if ($breakLevel == 0) {
-                    $context = $this->findLine($blockIndex, $blockPositions, $code);
-                    throw new SyntaxException('Trying to use {break $level} with nonnumerical level', 6, null, $context['line'], $templateFilePath);
-                }
-
-                if ($breakLevel > $this->tagData['loop']['level']) {
-                    $context = $this->findLine($blockIndex, $blockPositions, $code);
-                    throw new SyntaxException('Trying to {break} too many loops', 6, null, $context['line'], $templateFilePath);
-                }
-
-                $part = '<?php break '.strval($breakLevel).';?>';
-            }
-            else {
-                $context = $this->findLine($blockIndex, $blockPositions, $code);
-                throw new SyntaxException('Trying to use {break} with invalid way - cannot find ending char `}`', 6, null, $context['line'], $templateFilePath);
-            }
-        }
-    }
-
-    /**
-     * {continue} instruction, could be used only inside of {foreach} or {loop} blocks
-     *
-     * @param $tagData
-     * @param $part
-     * @param $tag
-     * @throws SyntaxException
-     * @author Damian Kęska <damian@pantheraframework.org>
-     * @author Mateusz Warzyński <lxnmen@gmail.com>
-     * @return null|void
-     */
-    protected function loop_continueBlockParser(&$tagData, &$part, &$tag, $templateFilePath, $blockIndex, $blockPositions, $code, &$passAllBlocksTo, $lowerPart)
-    {
-        $lowerPart = str_replace(" ", '', $lowerPart);
-
-        if (substr($lowerPart, 0 , 9) === '{continue')
+        if (substr($lowerPart, 0, 6) == '{break')
         {
-            if (!isset($this->tagData['loop']['level']) || $this->tagData['loop']['level'] < 1) {
+            $recognizedSyntax = 'break';
+            $syntaxLength = 6;
+        } elseif (substr($lowerPart, 0, 9) == '{continue') {
+            $recognizedSyntax = 'continue';
+            $syntaxLength = 9;
+        }
+
+        if ($recognizedSyntax)
+        {
+            if (!isset($this->tagData['loop']['level']) || $this->tagData['loop']['level'] < 1)
+            {
                 $context = $this->findLine($blockIndex, $blockPositions, $code);
-                throw new SyntaxException('Trying to use {continue} outside of a loop', 6, null, $context['line'], $templateFilePath);
+                throw new SyntaxException('Trying to use {break} outside of a loop', $syntaxLength, null, $context['line'], $templateFilePath);
             }
 
             $endChar = strpos($lowerPart, "}");
 
-            if ($endChar === 9)
+            if ($endChar === $syntaxLength)
             {
-                $part = '<?php continue;?>';
+                $part = '<?php ' .$recognizedSyntax. ';?>';
             }
-            elseif ($endChar > 9)
+            elseif ($endChar > $syntaxLength)
             {
-                $continueLevel = intval(substr($lowerPart, 9, strlen($lowerPart)-10));
-                if ($continueLevel == 0) {
+                $breakLevel = intval(substr($lowerPart, $syntaxLength, strlen($lowerPart)-($syntaxLength + 1)));
+
+                if (!$breakLevel)
+                {
                     $context = $this->findLine($blockIndex, $blockPositions, $code);
-                    throw new SyntaxException('Trying to use {continue $level} with nonnumerical level', 6, null, $context['line'], $templateFilePath);
+                    throw new SyntaxException('Trying to use {' .$recognizedSyntax. ' $level} with non-numerical level value', $syntaxLength, null, $context['line'], $templateFilePath);
+                }
+                elseif ($breakLevel > $this->tagData['loop']['level'])
+                {
+                    $context = $this->findLine($blockIndex, $blockPositions, $code);
+                    throw new SyntaxException('Trying to {' .$recognizedSyntax. '} too many loops that does not exists', $syntaxLength, null, $context['line'], $templateFilePath);
                 }
 
-                if ($continueLevel > $this->tagData['loop']['level']) {
-                    $context = $this->findLine($blockIndex, $blockPositions, $code);
-                    throw new SyntaxException('Trying to {continue} too many loops', 6, null, $context['line'], $templateFilePath);
-                }
-
-                $part = '<?php continue '.strval($continueLevel).';?>';
+                $part = '<?php ' .$recognizedSyntax. ' '.strval($breakLevel).';?>';
             }
             else {
                 $context = $this->findLine($blockIndex, $blockPositions, $code);
-                throw new SyntaxException('Trying to use {continue} with invalid way - cannot find ending char `}`', 6, null, $context['line'], $templateFilePath);
+                throw new SyntaxException('Trying to use {' .$recognizedSyntax. '} in invalid way - cannot find ending char `}`', $syntaxLength, null, $context['line'], $templateFilePath);
             }
         }
     }
