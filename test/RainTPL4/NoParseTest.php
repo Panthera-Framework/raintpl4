@@ -42,7 +42,7 @@ class NoParseTest extends RainTPLTestCase
     public function testCommentFirst()
     {
         $this->setupRainTPL4();
-        $this->assertEquals('something', $this->engine->drawString("{* This is a test comment *}something", true));
+        $this->assertEquals('something', $this->engine->drawString("some{* This is a test comment *}thing", true));
     }
 
     /**
