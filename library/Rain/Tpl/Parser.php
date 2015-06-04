@@ -950,7 +950,7 @@ class Parser
         }
 
         // variables substitution (eg. {$title})
-        $part = "<?=" . $this->parseModifiers($var, true) . ";?>";
+        $part = "<?php echo " . $this->parseModifiers($var, true) . ";?>";
         return true;
     }
 
