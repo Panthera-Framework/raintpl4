@@ -39,6 +39,22 @@ class LoopTest extends RainTPLTestCase
     }
 
     /**
+     * Testcase for {foreach from="$array" as $value}
+     *
+     * <code>{foreach from="$arrayVariable" as $v}{$key} => {$v}, {/foreach}</code>
+     * <expects>0 => value1, 1 => value2,</expects>
+     *
+     * @author Damian Kęska <damian@pantheraframework.org>
+     */
+    public function testForeachAsValue()
+    {
+        $this->setupRainTPL4();
+
+        $this->engine->assign('arrayVariable', array('value1', 'value2'));
+        $this->autoAssertEquals();
+    }
+
+    /**
      * Testcase for {foreach from="$array" key="keyName" item="itemValue"}
      *
      * <code>{foreach from="$arrayVariable" key="keyName" item="itemValue"}{$itemValue}{/foreach}</code>
