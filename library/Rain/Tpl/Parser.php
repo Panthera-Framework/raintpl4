@@ -1930,6 +1930,11 @@ class Parser
                     {
                         $valueEnds = self::strposa($part, array(' ', '}'), $valueStarts);
                         $arguments['value'] = substr($part, ($valueStarts + 1), ($valueEnds - $valueStarts) - 1);
+                    } else {
+
+                        // {foreach from="item" as $value}
+                        $arguments['value'] = $arguments['key'];
+                        unset($arguments['key']);
                     }
                 }
             }
