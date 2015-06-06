@@ -129,18 +129,11 @@ trait RainTPLEventsHandler
         {
             if (is_dir($path))
             {
-                foreach (scandir($path) as $file)
+                foreach ($this->__eventHandlersEnabledByDefault as $pluginName)
                 {
-                    $pos = strpos($file, '.RainTPLPlugin.php');
-
-                    if ($pos !== false)
+                    if (is_file($path . '/' .$pluginName. '/' .$pluginName. '.RainTPLPlugin.php') && !isset($this->__eventHandlers[$pluginName]))
                     {
-                        $pluginName = substr($file, 0, $pos);
-
-                        if (!isset($this->__eventHandlers[$pluginName]))
-                        {
-                            $this->loadEventsHandler($pluginName, $path . $file);
-                        }
+                        $this->loadEventsHandler($pluginName, $path . '/' .$pluginName. '/' .$pluginName. '.RainTPLPlugin.php');
                     }
                 }
             }
