@@ -288,7 +288,7 @@ class Parser
                 if ($sCharMatch)
                 {
                     // divide into bigger blocks
-                    if ($lastBlockType === 1) {
+                    if ($lastBlockType === 1 || $arrIndex === -1) {
                         $split[] = substr($code, $cursor, ($current - $cursor));
                         $arrIndex++;
                     } else
@@ -332,7 +332,8 @@ class Parser
      *
      * @event parser.compileTemplate.unknownTag $pos, $part, $templateFilepath
      * @event parser.compileTemplate.notClosedTag $tag
-     * @event parser.compileTemplate.after $parsedCode, $templateFilepath
+     * @event parser.compileTemplate.before $code, $templateFilepath
+     * @event parser.compileTemplate.after $code, $templateFilepath, $parsedCode
      *
      * @throws \Rain\Tpl_Exception
      * @throws string
@@ -342,6 +343,8 @@ class Parser
     {
         $parsedCode = '';
         $templateEnding = '';
+
+        list($code, $templateFilepath, $parsedCode) = $this->executeEvent('parser.compileTemplate.unknownTag', array($code, $templateFilepath, $parsedCode));
 
         // statistics
         $compilationTime = microtime(true);
@@ -552,7 +555,7 @@ class Parser
         }
 
         // execute plugins
-        list($parsedCode, $templateFilepath) = $this->executeEvent('parser.compileTemplate.after', array($parsedCode, $templateFilepath));
+        list($parsedCode, $templateFilepath) = $this->executeEvent('parser.compileTemplate.after', array($parsedCode, $templateFilepath, $this));
 
         // execute plugins, after_parse
         /*if ($this->getConfigurationKey('raintpl3_plugins_compatibility'))
@@ -852,7 +855,7 @@ class Parser
      * @author Damian Kęska <damian@pantheraframework.org>
      * @return bool
      */
-    protected function parseTagEnding($tagBody, $endings)
+    public function parseTagEnding($tagBody, $endings)
     {
         $tagBody = strtolower($tagBody);
 
@@ -892,14 +895,14 @@ class Parser
      * @author Damian Kęska <damian@pantheraframework.org>
      * @return array
      */
-    protected function parseTagArguments($tagBody)
+    public static function parseTagArguments($tagBody)
     {
         // strip tag out of "{" and "}"
         if (substr($tagBody, 0, 1) == '{')
             $tagBody = substr($tagBody, 1, (strlen($tagBody) - 2));
 
         // this not includes a value with spaces inside as we will be passing mostly variables here
-        $args = $this->joinStrings(explode(' ', $tagBody), ' ');
+        $args = self::joinStrings(explode(' ', $tagBody), ' ');
 
         $argsAssoc = array();
 
@@ -1082,7 +1085,7 @@ class Parser
             return true;
         }
 
-        $arguments = $this->parseTagArguments($part);
+        $arguments = self::parseTagArguments($part);
         $tagData['operator'] = '=';
 
         /**
@@ -1224,7 +1227,7 @@ class Parser
             return true;
 
         } else {
-            $args = $this->parseTagArguments($part);
+            $args = self::parseTagArguments($part);
 
             if (!isset($args['name']) || !$args['name'])
             {
@@ -1779,7 +1782,7 @@ class Parser
         if (substr($tagBody, 0, 1) == '=')
             $includeTemplate = trim(substr($tagBody, 1, strlen($tagBody) - 1), '"' . "'");
         else {
-            $args = $this->parseTagArguments($tagBody);
+            $args = self::parseTagArguments($tagBody);
 
             // smarty-like {include file="/path/to/template/file"}
             if (isset($args['file']))
@@ -1883,7 +1886,7 @@ class Parser
         $tagData['count']++;
         $tagData['level']++;
 
-        $arguments = $this->parseTagArguments($part);
+        $arguments = self::parseTagArguments($part);
         $var = null;
 
         // "from"
@@ -2085,7 +2088,7 @@ class Parser
      * @author Damian Kęska <damian@pantheraframework.org>
      * @return array
      */
-    public function joinStrings(array $array, $delimiter = ' ')
+    public static function joinStrings(array $array, $delimiter = ' ')
     {
         /*$stringSyntax = array(
             '"' => 0,
