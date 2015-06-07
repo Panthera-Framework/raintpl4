@@ -158,6 +158,12 @@ trait RainTPLEventsHandler
             return false;
 
         $this->__eventHandlers[$name] = new $name($this);
+
+        if (method_exists($this->__eventHandlers[$name], 'init'))
+        {
+            $this->__eventHandlers[$name]->init();
+        }
+
         return $this->__eventHandlers[$name];
     }
 }

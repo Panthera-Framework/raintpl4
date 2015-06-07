@@ -22,11 +22,6 @@ abstract class RainTPL4Plugin
     {
         $this->engine = $rainTPLInstance;
 
-        if (method_exists($this, 'init'))
-        {
-            $this->init();
-        }
-
         /**
          * Apply plugin's default configuration to the RainTPL4 instance
          */
