@@ -40,7 +40,7 @@ class RainTPL4
         'pluginsIncludePath' => array(), // RainTPL4
         'pluginsEnabled' => array(), // RainTPL4
         'tpl_dir' => 'templates/', // RainTPL4
-        'cache_dir' => 'cache/', // RainTPL4
+        'cache_dir' => '/tmp/', // RainTPL4
         'tpl_ext' => 'html', // RainTPL4
         //'ignore_single_quote' => true,
         'predetect' => true, // RainTPL4
