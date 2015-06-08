@@ -75,7 +75,7 @@ class NoParseTest extends RainTPLTestCase
     public function testCommentFourth()
     {
         $this->setupRainTPL4();
-        $this->assertEquals('something', $this->engine->drawString("{*}{$hiddenValue}{/*}something", true));
+        $this->assertEquals('something', $this->engine->drawString('{*}{$hiddenValue}{/*}something', true));
     }
 
     /**
