@@ -10,7 +10,7 @@ class CSSLess extends Rain\Tpl\RainTPL4Plugin
 {
     public $dom = null;
     public $cacheDir = '/tmp/';
-    public $sass = 'sassc';
+    public $sass = 'sass';
     public $less = 'lessc';
     public $baseDirectory = './';
 
@@ -18,7 +18,7 @@ class CSSLess extends Rain\Tpl\RainTPL4Plugin
     {
         // default configuration
         $this->less = $this->engine->getConfigurationKey('CSSLess.less.executable', 'lessc');
-        $this->sass = $this->engine->getConfigurationKey('CSSLess.sass.executable', 'sassc');
+        $this->sass = $this->engine->getConfigurationKey('CSSLess.sass.executable', 'sass');
         $this->baseDirectory = $this->engine->getConfigurationKey('CSSLess.baseDir', './');
 
         if (!is_dir($this->baseDirectory))
@@ -86,7 +86,7 @@ class CSSLess extends Rain\Tpl\RainTPL4Plugin
              * Replace header
              */
             $attributes['type'] = 'text/css';
-            $newHeader = 'style';
+            $newHeader = 'style <?php /** @CSSLess-timestamp: ' .time(). ' */?> ';
 
             foreach ($attributes as $key => $value)
             {
@@ -197,11 +197,13 @@ class CSSLess extends Rain\Tpl\RainTPL4Plugin
             return '';
         }
 
-        if ($type == 'text/sass' && basename($this->sass) == 'sassc')
-            return self::pipeToProc($this->sass. ' -t expanded', $code);
-
+        if ($type == 'text/sass' && (basename($this->sass) == 'sassc' || basename($this->sass) == 'sass'))
+        {
+            $sassArgs = basename($this->sass) == 'sass' ? $this->engine->getConfigurationKey('CSSLess.sass.args', '--scss') : $this->engine->getConfigurationKey('CSSLess.sass.args', '');
+            return self::pipeToProc($this->sass . ' -t expanded ' .$sassArgs, $code);
+        }
         elseif ($type == 'text/less' && basename($this->less) == 'lessc')
-            return self::pipeToProc($this->less. ' -', $code);
+            return self::pipeToProc($this->less. ' -' .$this->engine->getConfigurationKey('CSSLess.less.args', ''), $code);
 
         throw new Exception('Unrecognized <style> language', 456);
     }
@@ -221,7 +223,11 @@ class CSSLess extends Rain\Tpl\RainTPL4Plugin
         defined('STDERR') and $streams[] = STDERR;
 
         $proc = proc_open($cmd, $streams, $pipes);
-        is_resource($proc) or die("Cannot start [$cmd].");
+
+        if (!is_resource($proc))
+        {
+            throw new Exception("Cannot start `" . $cmd . "`");
+        }
 
         fwrite($pipes[0], $stdin);
         fclose(array_shift($pipes));
@@ -233,7 +239,7 @@ class CSSLess extends Rain\Tpl\RainTPL4Plugin
 
         if ($exitCode !== 0)
         {
-            throw new Exception ("Failed to call [$cmd] - exit code $exitCode.");
+            throw new Exception("Failed to call `" .$cmd. "` - exit code $exitCode, output: '" . $stdout . "', input: '" .$stdin. "'");
         }
 
         return $stdout;
