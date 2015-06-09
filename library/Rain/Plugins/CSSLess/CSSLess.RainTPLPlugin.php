@@ -49,6 +49,13 @@ class CSSLess extends Rain\Tpl\RainTPL4Plugin
         $this->engine->connectEvent('engine.checkTemplate.parsedTemplateFilePath', array($this, 'checkTemplate'));
     }
 
+    /**
+     * Check template for changes in external resources
+     *
+     * @param string $compiledTemplatePath
+     * @author Damian Kęska <damian@pantheraframework.org>
+     * @return bool|string
+     */
     public function checkTemplate($compiledTemplatePath)
     {
         if (is_file($compiledTemplatePath))
