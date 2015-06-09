@@ -4,7 +4,9 @@
  * Requires a shell access to the server
  *
  * @config CSSLess.less.executable lessc LESS CSS compiler executable
- * @config CSSLess.sass.executable sass SASS/SCSS compiler executable
+ * @config CSSLess.sass.executable sass SASS/SCSS compiler executable (supported: sass, sassc, pyscss)
+ * @config CSSLess.sass.args --scss SASS compiler parameters
+ * @config CSSLess.less.args '' LESS compiler parameters
  * @config CSSLess.baseDir ./ Base directory, eg. your web application webroot directory, used in "href" attribute in <link> tags (optionally also in "source" attribute)
  * @package Rain\Plugins
  * @author Damian Kęska <damian@pantheraframework.org>
@@ -24,6 +26,19 @@ class CSSLess extends Rain\Tpl\RainTPL4Plugin
         $this->sass = $this->engine->getConfigurationKey('CSSLess.sass.executable', 'sass');
         $this->baseDirectory = $this->engine->getConfigurationKey('CSSLess.baseDir', './');
 
+        switch (basename($this->sass))
+        {
+            case 'sass':
+                $this->engine->getConfigurationKey('CSSLess.sass.args', '--scss');
+            break;
+
+            case 'sassc':
+            case 'pyscss':
+            default:
+                $this->engine->getConfigurationKey('CSSLess.sass.args', '');
+            break;
+        }
+
         if (!is_dir($this->baseDirectory))
         {
             throw new Rain\Tpl\IOException('"' .$this->baseDirectory. '" (' .realpath($this->baseDirectory). '") is not a directory', 1);
@@ -31,6 +46,39 @@ class CSSLess extends Rain\Tpl\RainTPL4Plugin
 
         $this->cacheDir = $this->engine->getConfigurationKey('cache_dir');
         $this->engine->connectEvent('parser.compileTemplate.after', array($this, 'afterCompile'));
+        $this->engine->connectEvent('engine.checkTemplate.parsedTemplateFilePath', array($this, 'checkTemplate'));
+    }
+
+    public function checkTemplate($compiledTemplatePath)
+    {
+        if (is_file($compiledTemplatePath))
+        {
+            $contents = file_get_contents($compiledTemplatePath);
+            $pos = 0;
+
+            do
+            {
+                $pos = strpos($contents, '/** @CSSLess-timestamp:', $pos);
+                $posEnd = strpos($contents, '/CSSLess-timestamp-ends/', ($pos + 1));
+
+                if ($pos === false || $posEnd === false)
+                {
+                    break;
+                }
+
+                $data = json_decode(base64_decode(substr($contents, ($pos + 23), ($posEnd - $pos - 23))), true);
+
+                /**
+                 * Check if CSS file was modified, if yes then tell RainTPL4 to recompile the template and it's all resources
+                 */
+                if (!is_file($data['href']) || filemtime($data['source']) > $data['time'])
+                {
+                    return false;
+                }
+
+                $pos = $posEnd + 1;
+            } while ($pos !== false);
+        }
     }
 
     /**
@@ -89,13 +137,14 @@ class CSSLess extends Rain\Tpl\RainTPL4Plugin
              * Replace header
              */
             $attributes['type'] = 'text/css';
-            $newHeader = 'style <?php /** @CSSLess-timestamp: ' .time(). ' */?> ';
+            $newHeader = 'style';
 
             foreach ($attributes as $key => $value)
             {
                 $newHeader .= ' ' . $key . '="' . $value . '"';
             }
 
+            $newHeader = trim($newHeader);
             $headerDiff = strlen($newHeader) - strlen($header);
             $input[0] = substr_replace($input[0], $newHeader, ($pos + 1), ($posEnd - $pos - 1));
             $input[0] = substr_replace($input[0], $newBody, ($posEnd + $headerDiff) + 1, (($endingTagPos - $posEnd - 1) - $headerDiff - 1));
@@ -161,18 +210,17 @@ class CSSLess extends Rain\Tpl\RainTPL4Plugin
                     fwrite($fp, $this->getCompiledCode(file_get_contents($source), $header['type']));
                     fclose($fp);
 
-                    $newHeader = 'link ';
+                    $newHeader = 'link <?php /** @CSSLess-timestamp:' .base64_encode(json_encode(array('time' => time(), 'href' => $this->baseDirectory. '/' .$header['href'], 'source' => $source))). '/CSSLess-timestamp-ends/ */?>';
                     $header['type'] = 'text/css';
                     $header['rel'] = 'stylesheet';
                     unset($header['source']);
-
 
                     foreach ($header as $key => $value)
                     {
                         $newHeader .= $key . '="' . $value . '" ';
                     }
 
-                    $input[0] = substr_replace($input[0], $newHeader, $pos + 1, ($ending - $pos - 1));
+                    $input[0] = substr_replace($input[0], trim($newHeader), $pos + 1, ($ending - $pos - 1));
                 }
 
                 $pos = $ending;
@@ -200,10 +248,9 @@ class CSSLess extends Rain\Tpl\RainTPL4Plugin
             return '';
         }
 
-        if ($type == 'text/sass' && (basename($this->sass) == 'sassc' || basename($this->sass) == 'sass'))
+        if ($type == 'text/sass' && (basename($this->sass) == 'sassc' || basename($this->sass) == 'sass' || basename($this->sass) == 'pyscss'))
         {
-            $sassArgs = basename($this->sass) == 'sass' ? $this->engine->getConfigurationKey('CSSLess.sass.args', '--scss') : $this->engine->getConfigurationKey('CSSLess.sass.args', '');
-            return self::pipeToProc($this->sass . ' -t expanded ' .$sassArgs, $code);
+            return self::pipeToProc($this->sass . ' -t expanded ' .$this->engine->getConfigurationKey('CSSLess.sass.args'), $code);
         }
         elseif ($type == 'text/less' && basename($this->less) == 'lessc')
             return self::pipeToProc($this->less. ' -' .$this->engine->getConfigurationKey('CSSLess.less.args', ''), $code);
@@ -229,7 +276,7 @@ class CSSLess extends Rain\Tpl\RainTPL4Plugin
 
         if (!is_resource($proc))
         {
-            throw new Exception("Cannot start `" . $cmd . "`");
+            throw new Exception("Cannot start `" . $cmd . "`, please make sure the command is avaliable, a proper tool is installed");
         }
 
         fwrite($pipes[0], $stdin);
@@ -242,7 +289,7 @@ class CSSLess extends Rain\Tpl\RainTPL4Plugin
 
         if ($exitCode !== 0)
         {
-            throw new Exception("Failed to call `" .$cmd. "` - exit code $exitCode, output: '" . $stdout . "', input: '" .$stdin. "'");
+            throw new Exception("Failed to call `" .$cmd. "`, please make sure the command is avaliable, a proper tool is installed. Exit code $exitCode, output: '" . $stdout . "', input: '" .$stdin. "'");
         }
 
         return $stdout;

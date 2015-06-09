@@ -13,12 +13,14 @@ $rain->setConfiguration(array(
     'tpl_dir'             => __DIR__. '/../../templates/',
     'cache_dir'           => "/tmp/",
     'remove_comments'     => true,
-    'debug'               => true,
+    'debug'               => false,
     'ignore_unknown_tags' => true,
     'pluginsEnabled'      => array(
         'CSSLess',
     ),
     'CSSLess.baseDir'     => __DIR__,
+    'CSSLess.less.executable' => 'lessc', // only lessc is supported
+    'CSSLess.sass.executable' => 'sass', // could be for example: sass, sassc, pyscss
 ));
 
 $rain->draw('less-css/index.tpl');
