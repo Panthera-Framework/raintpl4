@@ -276,7 +276,7 @@ class CSSLess extends Rain\Tpl\RainTPL4Plugin
 
         if (!is_resource($proc))
         {
-            throw new Exception("Cannot start `" . $cmd . "`, please make sure the command is avaliable, a proper tool is installed");
+            throw new Exception("Cannot start `" . $cmd . "`, please make sure the command is available, a proper tool is installed");
         }
 
         fwrite($pipes[0], $stdin);
@@ -289,7 +289,7 @@ class CSSLess extends Rain\Tpl\RainTPL4Plugin
 
         if ($exitCode !== 0)
         {
-            throw new Exception("Failed to call `" .$cmd. "`, please make sure the command is avaliable, a proper tool is installed. Exit code $exitCode, output: '" . $stdout . "', input: '" .$stdin. "'");
+            throw new Exception("Failed to call `" .$cmd. "`, please make sure the command is available, a proper tool is installed. Exit code $exitCode, output: '" . $stdout . "', input: '" .$stdin. "'");
         }
 
         return $stdout;
