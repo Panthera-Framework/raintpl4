@@ -8,7 +8,7 @@ RainTPL4 was created as a refactored and improved RainTPL3 engine, with improved
 
 Features
 --------
-* New technology - supports embedding LESS, SASS, SCSS and Coffescript into &lt;script&gt;, &lt;link&gt; and &lt;style&gt; tags, code is automaticaly re-compilled into pure CSS and Javascript by RainTPL4 and external tools
+* New technology - supports embedding LESS, SASS, SCSS and Coffescript into &lt;script&gt;, &lt;link&gt; and &lt;style&gt; tags, code is automaticaly re-compilled into pure CSS and Javascript by RainTPL4 using external tools
 * Faster performance than any other templating engine for PHP offering same possibilities
 * Easy for designers, simple and understandable tags known from Smarty
 * Easy for developers, 5 methods to load and draw templates
