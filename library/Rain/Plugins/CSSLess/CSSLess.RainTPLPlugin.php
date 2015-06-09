@@ -16,16 +16,15 @@ class CSSLess extends Rain\Tpl\RainTPL4Plugin
 
     public function init()
     {
-        // shared HTML parser object between plugins
-        if (isset($this->engine->__eventHandlers['Coffescript']))
-        {
-            $this->dom = &$this->engine->__eventHandlers['Coffescript']->dom;
-        }
-
         // default configuration
         $this->less = $this->engine->getConfigurationKey('CSSLess.less.executable', 'lessc');
         $this->sass = $this->engine->getConfigurationKey('CSSLess.sass.executable', 'sassc');
         $this->baseDirectory = $this->engine->getConfigurationKey('CSSLess.baseDir', './');
+
+        if (!is_dir($this->baseDirectory))
+        {
+            throw new Rain\Tpl\IOException('"' .$this->baseDirectory. '" (' .realpath($this->baseDirectory). '") is not a directory', 1);
+        }
 
         $this->cacheDir = $this->engine->getConfigurationKey('cache_dir');
         $this->engine->connectEvent('parser.compileTemplate.after', array($this, 'afterCompile'));
@@ -34,17 +33,17 @@ class CSSLess extends Rain\Tpl\RainTPL4Plugin
     /**
      * Execute a LESS and/or SASS code compilation after template compilation
      *
-     * @param array $input array($parsedCode, $templateFilepath)
+     * @param array $input array($parsedCode, $templateFilepath, $parser)
      *
      * @throws \Rain\InvalidConfiguration
-     * @throws \Rain\RestrictedException
+     * @throws \Rain\Tpl\SyntaxException
      *
      * @author Damian Kęska <damian.keska@fingo.pl>
      * @return array
      */
     public function afterCompile($input)
     {
-        $pos = -1;
+        $pos = 0;
 
         /**
          * Parse all <style></style> tags
@@ -52,9 +51,20 @@ class CSSLess extends Rain\Tpl\RainTPL4Plugin
         do
         {
             // find <style, >, and </style> positions
-            $pos = stripos($input[0], '<style', ($pos + 1));
+            $pos = stripos($input[0], '<style', $pos);
+
+            if ($pos === false)
+            {
+                break;
+            }
+
             $posEnd = strpos($input[0], '>', $pos);
-            $endingTagPos = stripos($input[0], '</style>', $posEnd);
+            $endingTagPos = stripos($input[0], '</style>', ($posEnd+1));
+
+            if ($posEnd === false || $endingTagPos === false)
+            {
+                throw new \Rain\Tpl\SyntaxException('Syntax exception in HTML code, not closed <style/> tag', 126);
+            }
 
             // we need a <style > header and innerHTML body
             $body = substr($input[0], ($posEnd + 1), ($endingTagPos - $posEnd - 1));
@@ -87,12 +97,82 @@ class CSSLess extends Rain\Tpl\RainTPL4Plugin
             $input[0] = substr_replace($input[0], $newHeader, ($pos + 1), ($posEnd - $pos - 1));
             $input[0] = substr_replace($input[0], $newBody, ($posEnd + $headerDiff) + 1, (($endingTagPos - $posEnd - 1) - $headerDiff - 1));
 
+            if (($pos + 1) > strlen($input[0]))
+            {
+                $pos = false;
+            } else
+                $pos = $endingTagPos;
+
+        } while ($pos !== false && $pos < strlen($input[0]));
+
+        /**
+         * And also parse all external sources (<link/>)
+         */
+        $pos = -1;
+
+        do {
+            $pos = stripos($input[0], '<link', ($pos + 1));
+
             if ($pos !== false)
             {
-                $pos = ($endingTagPos + 8);
+                $ending = strpos($input[0], '>', ($pos + 2));
 
-                if (($pos + 1) > strlen($input[0]))
-                    $pos = false;
+                if ($ending !== false)
+                {
+                    $header = Rain\Tpl\Parser::parseTagArguments(substr($input[0], $pos + 1, ($ending - $pos - 1)));
+                    $source = null;
+
+                    if (!isset($header['type']))
+                    {
+                        continue;
+                    }
+
+                    // detect source code path
+                    if (isset($header['source']))
+                    {
+                        if (is_file($header['source']))
+                            $source = $header['source'];
+
+                        elseif (is_file($this->baseDirectory. '/' .$header['source']))
+                            $source = $this->baseDirectory. '/' .$header['source'];
+
+                        elseif (is_file(pathinfo($input[1], PATHINFO_DIRNAME). '/css/' .$header['source']))
+                            $source = pathinfo($input[1], PATHINFO_DIRNAME). '/css/' .$header['source'];
+
+                        elseif (is_file(pathinfo($input[1], PATHINFO_DIRNAME). '/' .$header['source']))
+                            $source = pathinfo($input[1], PATHINFO_DIRNAME). '/' .$header['source'];
+                    }
+
+                    if (!$source)
+                    {
+                        throw new \Rain\Tpl\SyntaxException('Cannot parse tag ' . htmlspecialchars(substr($input[0], $pos, ($ending - $pos))) . ', missing "source" attribute or file does not exists, you have to specify a valid less/sass source file to compile', 42);
+                    }
+
+                    if ($header['type'] != 'text/sass' && $header['type'] != 'text/less')
+                    {
+                        throw new \Rain\Tpl\SyntaxException('Cannot parse tag ' . htmlspecialchars(substr($input[0], $pos, ($ending - $pos))) . ', missing "type" attribute, possible values: text/sass, text/less', 25);
+                    }
+
+                    // compile the file
+                    $fp = fopen($this->baseDirectory. '/' .$header['href'], 'w');
+                    fwrite($fp, $this->getCompiledCode(file_get_contents($source), $header['type']));
+                    fclose($fp);
+
+                    $newHeader = 'link ';
+                    $header['type'] = 'text/css';
+                    $header['rel'] = 'stylesheet';
+                    unset($header['source']);
+
+
+                    foreach ($header as $key => $value)
+                    {
+                        $newHeader .= $key . '="' . $value . '" ';
+                    }
+
+                    $input[0] = substr_replace($input[0], $newHeader, $pos + 1, ($ending - $pos - 1));
+                }
+
+                $pos = $ending;
             }
 
         } while ($pos !== false);
@@ -100,6 +180,16 @@ class CSSLess extends Rain\Tpl\RainTPL4Plugin
         return $input;
     }
 
+    /**
+     * Compile source code into CSS
+     *
+     * @param string $code
+     * @param string $type mime type eg. text/less, text/sass
+     *
+     * @throws Exception
+     * @author Damian Kęska <damian@pantheraframework.org>
+     * @return string
+     */
     public function getCompiledCode($code, $type)
     {
         if (!trim($code))
@@ -116,6 +206,15 @@ class CSSLess extends Rain\Tpl\RainTPL4Plugin
         throw new Exception('Unrecognized <style> language', 456);
     }
 
+    /**
+     * Execute a command with piped stdin (pass text to it)
+     *
+     * @param string $cmd Command
+     * @param string $stdin Input text
+     *
+     * @throws Exception
+     * @return string
+     */
     public static function pipeToProc($cmd, $stdin)
     {
         $streams = array(array('pipe', 'r'), array('pipe', 'w'));

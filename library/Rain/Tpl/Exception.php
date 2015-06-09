@@ -27,4 +27,6 @@ class Exception extends \Exception {
     }
 }
 
+class IOException extends \Exception {};
+
 // -- end

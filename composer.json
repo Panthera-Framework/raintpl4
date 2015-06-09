@@ -1,8 +1,9 @@
 {
-    "name": "rain/raintpl",
+    "name": "Panthera-Framework/raintpl4",
     "type": "library",
     "description": "easy and fast template engine",
     "homepage":"http://raintpl.com",
+    "version": "4.0",
     "license": "MIT",
     "authors": [
         {
