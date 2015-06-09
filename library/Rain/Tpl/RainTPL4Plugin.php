@@ -1,5 +1,6 @@
 <?php
 namespace Rain\Tpl;
+use Rain\RainTPL4;
 
 /**
  * Abstract interface class for RainTPL4 plugins
@@ -9,7 +10,14 @@ namespace Rain\Tpl;
  */
 abstract class RainTPL4Plugin
 {
+    /**
+     * @var RainTPL4 $engine
+     */
     public $engine;
+
+    /**
+     * @var string[]
+     */
     protected $defaultConfig = array();
 
     /**
