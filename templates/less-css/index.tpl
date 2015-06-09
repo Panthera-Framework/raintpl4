@@ -5,7 +5,7 @@
         <!-- CSSLess.baseDir configuration key was set to point at directory where is example-less-css.php script,
              but the template itself should be writed into directory where this template is placed -->
 
-        <link rel="stylesheet" type="text/sass" href="../../templates/less-css/test.css" source="test.sass">
+        <link rel="stylesheet" type="text/sass" href="../../templates/less-css/test.css" source="test.scss">
         <style type="text/less">
             @base: #f938ab;
 
