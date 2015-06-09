@@ -40,7 +40,7 @@ class RainTPL4
         'pluginsIncludePath' => array(), // RainTPL4
         'pluginsEnabled' => array(), // RainTPL4
         'tpl_dir' => 'templates/', // RainTPL4
-        'cache_dir' => 'cache/', // RainTPL4
+        'cache_dir' => '/tmp/', // RainTPL4
         'tpl_ext' => 'html', // RainTPL4
         //'ignore_single_quote' => true,
         'predetect' => true, // RainTPL4
@@ -380,6 +380,7 @@ class RainTPL4
      * @param string|null $parentTemplateFilePath (Optional) Parent template file path (that template which is including this one)
      * @param int|null|numeric $parentTemplateLine (Optional) Line from parent template that called this method
      * @param int|null|numeric $parentTemplateOffset (Optional) Offset of parent template where is this function called
+     * @param bool $forceCompile (Optional) Force template compilation
      *
      * @throws NotFoundException
      * @throws Tpl\Exception
@@ -387,9 +388,10 @@ class RainTPL4
      * @throws string
      * @event engine.checkTemplate.path $path
      * @event engine.checkTemplate.compile $path, $parsedTemplateFilepath
+     * @event engine.checkTemplate.parsedTemplateFilePath $parsedTemplateFilepath
      * @return string Compiled template absolute path
      */
-    protected function checkTemplate($template, $parentTemplateFilePath = null, $parentTemplateLine = null, $parentTemplateOffset = null)
+    protected function checkTemplate($template, $parentTemplateFilePath = null, $parentTemplateLine = null, $parentTemplateOffset = null, $forceCompile = false)
     {
         $originalTemplate = $template;
         $extension = '';
@@ -400,6 +402,13 @@ class RainTPL4
         $path = str_replace(array('//', '//'), '/', $path);
 
         $parsedTemplateFilepath = $this->getConfigurationKey('cache_dir') . basename($originalTemplate) . "." . md5(dirname($path) . serialize($this->getConfigurationKey('checksum')) . $originalTemplate) . '.rtpl.php';
+
+        // plugins
+        if (!$this->executeEvent('engine.checkTemplate.parsedTemplateFilePath', $parsedTemplateFilepath))
+        {
+            $forceCompile = true;
+        }
+
         $path = $this->executeEvent('engine.checkTemplate.path', $path);
 
         // if the template doesn't exsist throw an error
@@ -419,7 +428,7 @@ class RainTPL4
          *
          * @config bool allow_compile
          */
-        if (!$this->getConfigurationKey('allow_compile'))
+        if (!$this->getConfigurationKey('allow_compile') && !$forceCompile)
         {
             // check if there is a compiled version
             if (!is_file($parsedTemplateFilepath))
@@ -428,14 +437,20 @@ class RainTPL4
                 if (!$this->getConfigurationKey('allow_compile_once'))
                     throw new NotFoundException('Template cache file "' .$parsedTemplateFilepath. '" is missing and "allow_compile", "allow_compile_once" are disabled in configuration');
 
-            } else
-                return $parsedTemplateFilepath;
+            } else {
+
+                // allow template re-compiling ondemand for plugins
+                if (!$forceCompile)
+                {
+                    return $parsedTemplateFilepath;
+                }
+            }
         }
 
         /**
          * Run the parser if file was not updated since last compilation time
          */
-        if ($this->getConfigurationKey('debug') or !file_exists($parsedTemplateFilepath) or ( filemtime($parsedTemplateFilepath) < filemtime($path)))
+        if ($this->getConfigurationKey('debug') or !is_file($parsedTemplateFilepath) or ( filemtime($parsedTemplateFilepath) < filemtime($path)) or $forceCompile)
         {
             list($path, $parsedTemplateFilepath) = $this->executeEvent('engine.checkTemplate.compile', array($path, $parsedTemplateFilepath));
             $parser = new Tpl\Parser($this);

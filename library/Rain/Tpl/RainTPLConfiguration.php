@@ -24,12 +24,12 @@ trait RainTPLConfiguration
      */
     public function getConfigurationKey($key, $defaults = null)
     {
-        if (isset($this->config[$key]))
+        if (!isset($this->config[$key]))
         {
-            return $this->config[$key];
+            $this->config[$key] = $defaults;
         }
 
-        return $defaults;
+        return $this->config[$key];
     }
 
     /**

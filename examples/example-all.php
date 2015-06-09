@@ -1,5 +1,4 @@
 <?php
-// include
 include "../library/Rain/autoload.php";
 
 // namespace
