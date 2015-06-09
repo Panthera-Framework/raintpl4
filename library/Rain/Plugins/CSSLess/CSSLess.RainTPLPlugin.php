@@ -3,6 +3,9 @@
  * Adds support for LESS and SASS using external compilers
  * Requires a shell access to the server
  *
+ * @config CSSLess.less.executable lessc LESS CSS compiler executable
+ * @config CSSLess.sass.executable sass SASS/SCSS compiler executable
+ * @config CSSLess.baseDir ./ Base directory, eg. your web application webroot directory, used in "href" attribute in <link> tags (optionally also in "source" attribute)
  * @package Rain\Plugins
  * @author Damian Kęska <damian@pantheraframework.org>
  */
