@@ -13,7 +13,7 @@ $rain->setConfiguration(array(
     'tpl_dir'             => __DIR__. '/../../templates/',
     'cache_dir'           => "/tmp/",
     'remove_comments'     => true,
-    'debug'               => false,
+    'debug'               => true,
     'ignore_unknown_tags' => true,
     'pluginsEnabled'      => array(
         'CoffeeScript',

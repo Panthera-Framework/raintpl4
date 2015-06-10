@@ -5,7 +5,7 @@
     <!-- CoffeeScript.baseDir configuration key was set to point at directory where is example-coffee-script.php script,
          but the template itself should be written into directory where this template is placed -->
 
-    <script type="text/coffeescript" src="../../templates/coffee-script/test.coffee"></script>
+    <script type="text/coffeescript" src="../../templates/coffee-script/test.js" source="../../templates/coffee-script/test.coffee"></script>
 
     <style type="text/css">
         #status {

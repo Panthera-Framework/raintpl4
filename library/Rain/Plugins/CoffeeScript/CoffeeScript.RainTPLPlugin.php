@@ -3,6 +3,8 @@
  * Adds support for CoffeeScript using external compilers
  * Requires a shell access to the server
  *
+ * @todo Mateusz, please write configuration description here, examples are in CSSLess plugin code
+ *
  * @package Rain\Plugins
  * @author Mateusz Warzyński <lxnmen@gmail.com>
  * @author Damian Kęska <damian@pantheraframework.org>
@@ -46,8 +48,8 @@ class CoffeeScript extends Rain\Tpl\RainTPL4Plugin
 
             do
             {
-                $pos = strpos($contents, '/** @CSSLess-timestamp:', $pos);
-                $posEnd = strpos($contents, '/CSSLess-timestamp-ends/', ($pos + 1));
+                $pos = strpos($contents, '/** @CoffeeScript-timestamp:', $pos);
+                $posEnd = strpos($contents, '/CoffeeScript-timestamp-ends/', ($pos + 1));
 
                 if ($pos === false || $posEnd === false)
                 {
@@ -122,19 +124,36 @@ class CoffeeScript extends Rain\Tpl\RainTPL4Plugin
                 continue;
             }
 
-            if (isset($attributes['src']))
+            if (isset($attributes['src']) && isset($attributes['source']))
             {
-                $attributes['src'] = $this->compileCoffeeFile($this->baseDirectory."/".$attributes['src'], $attributes['src']);
+				// detect source code path
+				if (isset($attributes['source']))
+				{
+					if (is_file($attributes['source']))
+						$source = $attributes['source'];
+
+					elseif (is_file($this->baseDirectory. '/' .$attributes['source']))
+						$source = $this->baseDirectory. '/' .$attributes['source'];
+
+					elseif (is_file(pathinfo($input[1], PATHINFO_DIRNAME). '/css/' .$attributes['source']))
+						$source = pathinfo($input[1], PATHINFO_DIRNAME). '/css/' .$attributes['source'];
+
+					elseif (is_file(pathinfo($input[1], PATHINFO_DIRNAME). '/' .$attributes['source']))
+						$source = pathinfo($input[1], PATHINFO_DIRNAME). '/' .$attributes['source'];
+				}
+
+				$newHeader = 'script<?php /** @CoffeeScript-timestamp:' .base64_encode(json_encode(array('time' => time(), 'href' => $this->baseDirectory. '/' .$attributes['href'], 'source' => $source))). '/CoffeeScript-timestamp-ends/ */?>';
+				$this->compileCoffeeFile($source, $attributes['src']);
                 $newBody = "";
             } else {
                 $newBody = $this->getCompiledCode($body, $attributes['type']);
+				$newHeader = 'script';
             }
 
             /**
              * Replace header
              */
             $attributes['type'] = 'text/javascript';
-            $newHeader = 'script';
 
             foreach ($attributes as $key => $value)
             {
@@ -186,24 +205,23 @@ class CoffeeScript extends Rain\Tpl\RainTPL4Plugin
     /**
      * Compile CoffeeScript file to JavaScript
      *
-     * @param string $coffeeFile path to file with coffeescript code
-     * @param string $sourceValue path to Coffee file in src tag
+     * @param string $coffeeFile CoffeeScript source code path
+	 * @param string $outputPath Path where to save css file
      *
      * @throws Exception
      * @author Mateusz Warzyński <lxnmen@gmail.com>
-     * @return string
+     * @return bool
      */
-    public function compileCoffeeFile($coffeeFile, $sourceValue)
+    public function compileCoffeeFile($coffeeFile, $outputPath)
     {
         if (basename($this->coffee) == 'coffee')
         {
-            if (file_exists($coffeeFile))
+            if (is_file($coffeeFile))
             {
-                $command = $this->coffee.' -cb '.$coffeeFile;
-                shell_exec($command);
-
-                if (file_exists(str_replace(".coffee", ".js", $coffeeFile)))
-                    return str_replace(".coffee", ".js", $sourceValue, $count);
+				$fp = fopen($outputPath, 'w');
+				fwrite($fp, $this->getCompiledCode(file_get_contents($coffeeFile), 'text/coffeescript'));
+				fclose($fp);
+				return true;
             }
         }
 
