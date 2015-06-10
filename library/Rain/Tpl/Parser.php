@@ -149,7 +149,7 @@ class Parser
                     return "<?php echo '<?xml " . stripslashes($match[1]) . " ?>'; ?>";
                 }, $code);
 
-            $parsedCode = "<?php if(!class_exists('Rain\RainTPL4')){exit;}?>" . $this->compileTemplate($code, $templateFilepath);
+            $parsedCode = "<?php if(!class_exists('Rain\RainTPL4')){exit;}?>" . $this->compileTemplate($code, $templateFilepath, $parsedTemplateFilepath);
 
             // fix the php-eating-newline-after-closing-tag-problem
             $parsedCode = str_replace("?>\n", "?>\n\n", $parsedCode);
@@ -325,10 +325,9 @@ class Parser
      * Compile template
      * @access protected
      *
-     * @param string $code : code to compile
-     * @param $isString
-     * @param $templateDirectory
-     * @param $templateFilepath
+     * @param string $code Code to compile
+     * @param string $templateFilepath
+     * @param string $parsedTemplateFilepath
      *
      * @event parser.compileTemplate.unknownTag $pos, $part, $templateFilepath
      * @event parser.compileTemplate.notClosedTag $tag
@@ -339,7 +338,7 @@ class Parser
      * @throws string
      * @return null|string
      */
-    protected function compileTemplate($code, $templateFilepath)
+    protected function compileTemplate($code, $templateFilepath, $parsedTemplateFilepath = '')
     {
         $parsedCode = '';
         $templateEnding = '';
@@ -555,7 +554,7 @@ class Parser
         }
 
         // execute plugins
-        list($parsedCode, $templateFilepath) = $this->executeEvent('parser.compileTemplate.after', array($parsedCode, $templateFilepath, $this));
+        list($parsedCode, $templateFilepath, $parsedTemplateFilepath) = $this->executeEvent('parser.compileTemplate.after', array($parsedCode, $templateFilepath, $parsedTemplateFilepath, $this));
 
         // execute plugins, after_parse
         /*if ($this->getConfigurationKey('raintpl3_plugins_compatibility'))

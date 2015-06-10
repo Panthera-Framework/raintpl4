@@ -16,8 +16,9 @@ $rain->setConfiguration(array(
     'debug'               => true,
     'ignore_unknown_tags' => true,
     'pluginsEnabled'      => array(
-        'CoffeeScript',
+        'CoffeeScript', 'CSSLess',
     ),
+    'CSSLess.baseDir'     => __DIR__,
     'CoffeeScript.baseDir'     => __DIR__,
     'CoffeeScript.coffee.executable' => 'coffee',
 ));

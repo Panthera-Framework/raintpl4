@@ -13,11 +13,12 @@
  */
 class CSSLess extends Rain\Tpl\RainTPL4Plugin
 {
-    public $dom = null;
     public $cacheDir = '/tmp/';
     public $sass = 'sass';
     public $less = 'lessc';
     public $baseDirectory = './';
+    public $content = null;
+    public $recentlyCompiled = null;
 
     public function init()
     {
@@ -39,6 +40,12 @@ class CSSLess extends Rain\Tpl\RainTPL4Plugin
             break;
         }
 
+        // copy file content from CoffeScript plugin's memory
+        if (isset($this->engine->__eventHandlers['CoffeeScript']))
+        {
+            $this->content = $this->engine->__eventHandlers['CoffeeScript']->content;
+        }
+
         if (!is_dir($this->baseDirectory))
         {
             throw new Rain\Tpl\IOException('"' .$this->baseDirectory. '" (' .realpath($this->baseDirectory). '") is not a directory', 1);
@@ -58,22 +65,31 @@ class CSSLess extends Rain\Tpl\RainTPL4Plugin
      */
     public function checkTemplate($compiledTemplatePath)
     {
+        if ($this->recentlyCompiled == $compiledTemplatePath)
+        {
+            return true;
+        }
+
         if (is_file($compiledTemplatePath))
         {
-            $contents = file_get_contents($compiledTemplatePath);
+            if (!$this->content)
+            {
+                $this->content = file_get_contents($compiledTemplatePath);
+            }
+
             $pos = 0;
 
             do
             {
-                $pos = strpos($contents, '/** @CSSLess-timestamp:', $pos);
-                $posEnd = strpos($contents, '/CSSLess-timestamp-ends/', ($pos + 1));
+                $pos = strpos($this->content, '/** @CSSLess-timestamp:', $pos);
+                $posEnd = strpos($this->content, '/CSSLess-timestamp-ends/', ($pos + 1));
 
                 if ($pos === false || $posEnd === false)
                 {
                     break;
                 }
 
-                $data = json_decode(base64_decode(substr($contents, ($pos + 23), ($posEnd - $pos - 23))), true);
+                $data = json_decode(base64_decode(substr($this->content, ($pos + 23), ($posEnd - $pos - 23))), true);
 
                 /**
                  * Check if CSS file was modified, if yes then tell RainTPL4 to recompile the template and it's all resources
@@ -235,6 +251,7 @@ class CSSLess extends Rain\Tpl\RainTPL4Plugin
 
         } while ($pos !== false);
 
+        $this->recentlyCompiled = $input[2];
         return $input;
     }
 

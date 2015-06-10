@@ -11,10 +11,11 @@
  */
 class CoffeeScript extends Rain\Tpl\RainTPL4Plugin
 {
-    public $dom = null;
     public $coffee = 'coffee';
     public $templateDirectory = '';
     public $baseDirectory = './';
+    public $recentlyCompiled = null;
+    public $content = null;
 
     public function init()
     {
@@ -22,6 +23,12 @@ class CoffeeScript extends Rain\Tpl\RainTPL4Plugin
         $this->coffee = $this->engine->getConfigurationKey('CoffeeScript.coffee.executable', 'coffee');
         $this->baseDirectory = $this->engine->getConfigurationKey('CoffeeScript.baseDir', './');
         $this->templateDirectory = $this->engine->getConfigurationKey('tpl_dir');
+
+        // copy file content from CSSLess plugin's memory
+        if (isset($this->engine->__eventHandlers['CSSLess']))
+        {
+            $this->content = $this->engine->__eventHandlers['CSSLess']->content;
+        }
 
         if (!is_dir($this->baseDirectory))
         {
@@ -41,22 +48,27 @@ class CoffeeScript extends Rain\Tpl\RainTPL4Plugin
      */
     public function checkTemplate($compiledTemplatePath)
     {
+        if ($compiledTemplatePath == $this->recentlyCompiled)
+        {
+            return true;
+        }
+
         if (is_file($compiledTemplatePath))
         {
-            $contents = file_get_contents($compiledTemplatePath);
+            $this->contents = file_get_contents($compiledTemplatePath);
             $pos = 0;
 
             do
             {
-                $pos = strpos($contents, '/** @CoffeeScript-timestamp:', $pos);
-                $posEnd = strpos($contents, '/CoffeeScript-timestamp-ends/', ($pos + 1));
+                $pos = strpos($this->contents, '/** @CoffeeScript-timestamp:', $pos);
+                $posEnd = strpos($this->contents, '/CoffeeScript-timestamp-ends/', ($pos + 1));
 
                 if ($pos === false || $posEnd === false)
                 {
                     break;
                 }
 
-                $data = json_decode(base64_decode(substr($contents, ($pos + 23), ($posEnd - $pos - 23))), true);
+                $data = json_decode(base64_decode(substr($this->contents, ($pos + 23), ($posEnd - $pos - 23))), true);
 
                 /**
                  * Check if CSS file was modified, if yes then tell RainTPL4 to recompile the template and it's all resources
@@ -87,6 +99,7 @@ class CoffeeScript extends Rain\Tpl\RainTPL4Plugin
      */
     public function afterCompile($input)
     {
+        $this->recentlyCompiled = $input[2];
         $pos = 0;
 
         /**
