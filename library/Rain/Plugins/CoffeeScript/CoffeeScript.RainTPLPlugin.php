@@ -142,7 +142,7 @@ class CoffeeScript extends Rain\Tpl\RainTPL4Plugin
 						$source = pathinfo($input[1], PATHINFO_DIRNAME). '/' .$attributes['source'];
 				}
 
-				$newHeader = 'script<?php /** @CoffeeScript-timestamp:' .base64_encode(json_encode(array('time' => time(), 'href' => $this->baseDirectory. '/' .$attributes['href'], 'source' => $source))). '/CoffeeScript-timestamp-ends/ */?>';
+				$newHeader = 'script<?php /** @CoffeeScript-timestamp:' .base64_encode(json_encode(array('time' => time(), 'href' => $this->baseDirectory. '/' .$attributes['src'], 'source' => $source))). '/CoffeeScript-timestamp-ends/ */?>';
 				$this->compileCoffeeFile($source, $attributes['src']);
                 $newBody = "";
             } else {
@@ -163,7 +163,11 @@ class CoffeeScript extends Rain\Tpl\RainTPL4Plugin
             $newHeader = trim($newHeader);
             $headerDiff = strlen($newHeader) - strlen($header);
             $input[0] = substr_replace($input[0], $newHeader, ($pos + 1), ($posEnd - $pos - 1));
-            $input[0] = substr_replace($input[0], $newBody, ($posEnd + $headerDiff) + 1, (($endingTagPos - $posEnd - 1) - $headerDiff - 6));
+
+            if ($newBody)
+            {
+                $input[0] = substr_replace($input[0], $newBody, ($posEnd + $headerDiff) + 1, (($endingTagPos - $posEnd - 1) - $headerDiff - 6));
+            }
 
             if (($pos + 1) > strlen($input[0]))
             {
@@ -177,7 +181,7 @@ class CoffeeScript extends Rain\Tpl\RainTPL4Plugin
     }
 
     /**
-     * Compile source code into CSS
+     * Compile source code into CoffeeScript
      *
      * @param string $code
      * @param string $type mime type text/coffee-script
