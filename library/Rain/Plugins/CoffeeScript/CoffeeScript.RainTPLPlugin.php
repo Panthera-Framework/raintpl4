@@ -234,9 +234,15 @@ class CoffeeScript extends Rain\Tpl\RainTPL4Plugin
             return '';
         }
 
-        if (!$this->compilers[$type]['stdinParams'])
+        if ($this->compilers[$type]['stdinParams'] === false)
         {
+            $tempFile = tempnam(sys_get_temp_dir(), hash('md4', $code));
+            file_put_contents($tempFile, $code);
 
+            $this->compileCoffeeFile($tempFile, $tempFile. '.js', $type);
+            $code = file_get_contents($tempFile. '.js');
+            unlink($tempFile); unlink($tempFile. '.js');
+            return $code;
         }
 
         return self::pipeToProc($this->compilers[$type]['executable'] . ' ' .$this->compilers[$type]['stdinParams'], $code);
