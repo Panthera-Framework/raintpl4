@@ -1,1 +1,1 @@
-alert 'Test.coffee has been compiled properly. CoffeeScript works!'
+alert 'Test.coffee has been compiled properly. CoffeeScript works! :)'

@@ -4,3 +4,4 @@ vendor/*
 test/cache/*
 composer.lock
 templates/less-css/test.css
+templates/coffee-script/test.js

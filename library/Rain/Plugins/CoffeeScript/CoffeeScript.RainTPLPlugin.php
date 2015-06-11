@@ -3,7 +3,7 @@
  * Adds support for CoffeeScript using external compilers
  * Requires a shell access to the server
  *
- * @todo Mateusz, please write configuration description here, examples are in CSSLess plugin code
+ * @config
  *
  * @package Rain\Plugins
  * @author Mateusz Warzyński <lxnmen@gmail.com>
@@ -16,11 +16,27 @@ class CoffeeScript extends Rain\Tpl\RainTPL4Plugin
     public $baseDirectory = './';
     public $recentlyCompiled = null;
     public $content = null;
+    public $compilers = array();
 
     public function init()
     {
         // default configuration
-        $this->coffee = $this->engine->getConfigurationKey('CoffeeScript.coffee.executable', 'coffee');
+        $this->compilers = $this->engine->getConfigurationKey('CoffeeScript.compilers', array(
+            // CoffeeScript, ofically this is supported
+            'text/coffeescript' => array(
+                'executable' => 'coffee',
+                'stdinParams' => '-sp',
+                'fileParams' => '-p %s',
+            ),
+
+            // Google Dart, just an example how to add a custom language and compiler here # dart2js --out=test.js test.dart
+            'text/dart' => array(
+                'executable' => 'dart2js',
+                'stdinParams' => false, // dart2js does not support read from stdin
+                'fileParams' => '--out=%d %s',
+            ),
+        ));
+
         $this->baseDirectory = $this->engine->getConfigurationKey('CoffeeScript.baseDir', './');
         $this->templateDirectory = $this->engine->getConfigurationKey('tpl_dir');
 
@@ -36,7 +52,10 @@ class CoffeeScript extends Rain\Tpl\RainTPL4Plugin
         }
 
         $this->cacheDir = $this->engine->getConfigurationKey('cache_dir');
+
+        // hook up to Engine and Parser
         $this->engine->connectEvent('parser.compileTemplate.after', array($this, 'afterCompile'));
+        $this->engine->connectEvent('engine.checkTemplate.parsedTemplateFilePath', array($this, 'checkTemplate'));
     }
 
     /**
@@ -131,32 +150,36 @@ class CoffeeScript extends Rain\Tpl\RainTPL4Plugin
             $attributes = Rain\Tpl\Parser::parseTagArguments($header);
 
             // not a valid CoffeeScript, but probably just a regular Javascript code
-            if (!$attributes || !isset($attributes['type']) || ($attributes['type'] != 'text/coffeescript'))
+            if (!$attributes || !isset($attributes['type']) || !isset($this->compilers[$attributes['type']]))
             {
                 $pos = $endingTagPos;
                 continue;
             }
 
+            // normalize string
+            $attributes['type'] = trim(strtolower($attributes['type']));
+
             if (isset($attributes['src']) && isset($attributes['source']))
             {
-				// detect source code path
-				if (isset($attributes['source']))
-				{
-					if (is_file($attributes['source']))
-						$source = $attributes['source'];
+                // detect source code path
+                if (isset($attributes['source']))
+                {
+                    if (is_file($attributes['source']))
+                        $source = $attributes['source'];
 
-					elseif (is_file($this->baseDirectory. '/' .$attributes['source']))
-						$source = $this->baseDirectory. '/' .$attributes['source'];
+                    elseif (is_file($this->baseDirectory. '/' .$attributes['source']))
+                        $source = $this->baseDirectory. '/' .$attributes['source'];
 
-					elseif (is_file(pathinfo($input[1], PATHINFO_DIRNAME). '/css/' .$attributes['source']))
-						$source = pathinfo($input[1], PATHINFO_DIRNAME). '/css/' .$attributes['source'];
+                    elseif (is_file(pathinfo($input[1], PATHINFO_DIRNAME). '/css/' .$attributes['source']))
+                        $source = pathinfo($input[1], PATHINFO_DIRNAME). '/css/' .$attributes['source'];
 
-					elseif (is_file(pathinfo($input[1], PATHINFO_DIRNAME). '/' .$attributes['source']))
-						$source = pathinfo($input[1], PATHINFO_DIRNAME). '/' .$attributes['source'];
-				}
+                    elseif (is_file(pathinfo($input[1], PATHINFO_DIRNAME). '/' .$attributes['source']))
+                        $source = pathinfo($input[1], PATHINFO_DIRNAME). '/' .$attributes['source'];
+                }
 
-				$newHeader = 'script<?php /** @CoffeeScript-timestamp:' .base64_encode(json_encode(array('time' => time(), 'href' => $this->baseDirectory. '/' .$attributes['src'], 'source' => $source))). '/CoffeeScript-timestamp-ends/ */?>';
-				$this->compileCoffeeFile($source, $attributes['src']);
+                $newHeader = 'script<?php /** @CoffeeScript-timestamp:' .base64_encode(json_encode(array('time' => time(), 'href' => $this->baseDirectory. '/' .$attributes['src'], 'source' => $source))). '/CoffeeScript-timestamp-ends/ */?>';
+                unset($attributes['source']);
+                $this->compileCoffeeFile($source, $attributes['src'], $attributes['type']);
                 $newBody = "";
             } else {
                 $newBody = $this->getCompiledCode($body, $attributes['type']);
@@ -211,12 +234,12 @@ class CoffeeScript extends Rain\Tpl\RainTPL4Plugin
             return '';
         }
 
-        if ($type == 'text/coffeescript' && basename($this->coffee) == 'coffee')
+        if (!$this->compilers[$type]['stdinParams'])
         {
-            return self::pipeToProc($this->coffee . ' -sp ', $code);
+
         }
 
-        throw new Exception('Unrecognized <script/> language', 456);
+        return self::pipeToProc($this->compilers[$type]['executable'] . ' ' .$this->compilers[$type]['stdinParams'], $code);
     }
 
     /**
@@ -229,20 +252,18 @@ class CoffeeScript extends Rain\Tpl\RainTPL4Plugin
      * @author Mateusz Warzyński <lxnmen@gmail.com>
      * @return bool
      */
-    public function compileCoffeeFile($coffeeFile, $outputPath)
+    public function compileCoffeeFile($coffeeFile, $outputPath, $type)
     {
-        if (basename($this->coffee) == 'coffee')
-        {
-            if (is_file($coffeeFile))
-            {
-				$fp = fopen($outputPath, 'w');
-				fwrite($fp, $this->getCompiledCode(file_get_contents($coffeeFile), 'text/coffeescript'));
-				fclose($fp);
-				return true;
-            }
-        }
+        $params = str_replace('%s', $coffeeFile, $this->compilers[$type]['fileParams']);
+        $params = str_replace('%d', $outputPath, $params);
 
-        throw new Exception('CoffeeScript compiler could not be found.', 456);
+        $compiled = self::pipeToProc($this->compilers[$type]['executable'] . ' ' .$params, false);
+
+        // @todo: Implement it in normal way
+        $fp = fopen($outputPath, 'w');
+        fwrite($fp, $compiled);
+        fclose($fp);
+        return true;
     }
 
     /**
@@ -262,14 +283,17 @@ class CoffeeScript extends Rain\Tpl\RainTPL4Plugin
 
         $proc = proc_open($cmd, $streams, $pipes);
 
-        if (!is_resource($proc))
+        if ($stdin !== false)
         {
-            throw new Exception("Cannot start `" . $cmd . "`, please make sure the command is available, a proper tool is installed");
+            if (!is_resource($proc))
+            {
+                throw new Exception("Cannot start `" . $cmd . "`, please make sure the command is available, a proper tool is installed");
+            }
+
+            fwrite($pipes[0], $stdin);
         }
 
-        fwrite($pipes[0], $stdin);
         fclose(array_shift($pipes));
-
         $stdout = stream_get_contents($pipes[0]);
         fclose(array_shift($pipes));
 
