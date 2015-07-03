@@ -1,5 +1,10 @@
 language: php
 
+before_install:
+ - gem install sass
+ - npm install less
+ - npm install coffee-script
+
 php:
   - 5.4
   - 5.5
