@@ -1,10 +1,5 @@
 language: php
 
-before_install:
- - gem install sass
- - npm install less
- - npm install coffee-script
-
 php:
   - 5.4
   - 5.5
@@ -20,5 +15,16 @@ matrix:
       - nightly
       - hhvm
 
+addons:
+  code_climate:
+    repo_token: 51bd5ca279df15b4dd19f98bb45d4823e6cb117118208330f38ef97aa902843d
+
+before_install:
+ - gem install sass
+ - npm install less
+ - npm install coffee-script
 
 install: composer install
+
+after_script:
+  - vendor/bin/test-reporter

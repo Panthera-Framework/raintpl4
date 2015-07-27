@@ -10,18 +10,22 @@
          stopOnFailure="false"
          syntaxCheck="false"
          bootstrap="test/bootstrap.php"
->
-  <testsuites>
-    <testsuite name="Rain\Tpl Test">
-      <directory>./test/Tpl/</directory>
-      <directory>./test/issues/</directory>
-        <directory>./test/RainTPL4/</directory>
-    </testsuite>
-  </testsuites>
+        >
+    <logging>
+        <log type="coverage-clover" target="build/logs/clover.xml"/>
+    </logging>
 
-  <filter>
-    <whitelist>
-      <directory suffix=".php">./library/Rain/</directory>
-    </whitelist>
-  </filter>
+    <testsuites>
+        <testsuite name="Rain\Tpl Test">
+            <directory>./test/Tpl/</directory>
+            <directory>./test/issues/</directory>
+            <directory>./test/RainTPL4/</directory>
+        </testsuite>
+    </testsuites>
+
+    <filter>
+        <whitelist>
+            <directory suffix=".php">./library/Rain/</directory>
+        </whitelist>
+    </filter>
 </phpunit>
