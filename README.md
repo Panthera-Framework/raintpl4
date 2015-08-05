@@ -1,10 +1,18 @@
 RainTPL 4
 =========
 
-Originally by Federico Ulfo and a lot [awesome contributors](https://github.com/rainphp/raintpl3/network)!
+[![Latest Stable Version](https://poser.pugx.org/pantheraframework/raintpl4/v/stable)](https://packagist.org/packages/pantheraframework/raintpl4)
+[![License](https://poser.pugx.org/pantheraframework/raintpl4/license)](https://packagist.org/packages/pantheraframework/raintpl4)
+[![Total Downloads](https://poser.pugx.org/pantheraframework/raintpl4/downloads)](https://packagist.org/packages/pantheraframework/raintpl4)
+[![Build status](https://travis-ci.org/Panthera-Framework/raintpl4.svg)](https://travis-ci.org/Panthera-Framework/raintpl4)
+[![Code Climate](https://codeclimate.com/github/Panthera-Framework/raintpl4/badges/gpa.svg)](https://codeclimate.com/github/Panthera-Framework/raintpl4)
+[![Test Coverage](https://codeclimate.com/github/Panthera-Framework/raintpl4/badges/coverage.svg)](https://codeclimate.com/github/Panthera-Framework/raintpl4/coverage)
+
 [RainTPL](http://raintpl.com) is an easy template engine for PHP that enables designers and developers to work better together, it loads HTML template to separate the view from the logic.
 
 RainTPL4 was created as a refactored and improved RainTPL3 engine, with improved performance, new tags, better syntax and compatibility with Smarty templating engine.
+
+Originally by Federico Ulfo and a lot [awesome contributors](https://github.com/rainphp/raintpl3/network)
 
 Features
 --------
