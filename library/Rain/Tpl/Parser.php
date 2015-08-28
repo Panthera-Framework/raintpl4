@@ -612,7 +612,7 @@ class Parser
      * @param int $start String/character position
      * #@param null|int $end String/character ending position (if 1 byte character then it could be possibly $start = $end)
      *
-	 * @see static::getQuotesPositions()
+     * @see static::getQuotesPositions()
      * @todo Ignore escaped quotes eg. \"
      * @author Damian Kęska <damian@pantheraframework.org>
      * @return array Exact position of a quote set that is containing our search
@@ -686,38 +686,38 @@ class Parser
         {
             foreach ($var as $varPos)
             {
-				$length = strlen($varName);
-				$modifier = '';
-				$modifierPos = null;
-				$modifierEnds = null;
+                $length = strlen($varName);
+                $modifier = '';
+                $modifierPos = null;
+                $modifierEnds = null;
 
-				/**
-				 * Lookup for modifiers
-				 *
-				 * @keywords modifiers
-				 */
-				if ($updateModifier && substr($html, ($varPos + $length), 1) === '|')
-				{
-					$modifierPos = ($varPos + $length + 1);
-					$modifierEnds = self::strposa($html, array(
-						'(', ')',
-					), ($varPos + $length));
+                /**
+                 * Lookup for modifiers
+                 *
+                 * @keywords modifiers
+                 */
+                if ($updateModifier && substr($html, ($varPos + $length), 1) === '|')
+                {
+                    $modifierPos = ($varPos + $length + 1);
+                    $modifierEnds = self::strposa($html, array(
+                        '(', ')',
+                    ), ($varPos + $length));
 
                     if ($modifierEnds === false)
                         $modifierEnds = strlen($html);
 
-					$modifier = substr($html, ($varPos + $length), ($modifierEnds - ($varPos + $length)));
-					$length = strlen($varName.$modifier);
-				}
+                    $modifier = substr($html, ($varPos + $length), ($modifierEnds - ($varPos + $length)));
+                    $length = strlen($varName.$modifier);
+                }
 
                 $mappedVariablePositions[] = array(
                     'pos' => $varPos,
                     'varName' => $varName,
                     'parsed' => $varName,
-					'length' => $length, // includes modifier length
-					'modifier' => $modifier,
-					'modifierPos' => $modifierPos,
-					'modifierEnds' => $modifierEnds,
+                    'length' => $length, // includes modifier length
+                    'modifier' => $modifier,
+                    'modifierPos' => $modifierPos,
+                    'modifierEnds' => $modifierEnds,
                 );
             }
         }
@@ -750,21 +750,21 @@ class Parser
                 $arrayModificatorString .= '["' .$arrayPart. '"]' .$endChar;
             }
 
-			// restore a dot at the end of string if there was any but wasnt used as an array operator
-			if (substr($varName, -1) === '.')
-				$arrayModificatorString .= '.';
+            // restore a dot at the end of string if there was any but wasnt used as an array operator
+            if (substr($varName, -1) === '.')
+                $arrayModificatorString .= '.';
 
-			// if any array modificator was found
-			if ($arrayModificatorString)
-				$parsedVariableString = substr($varName, 0, $dotPositions[0]). $arrayModificatorString;
-			else
-				$parsedVariableString = $varName;
+            // if any array modificator was found
+            if ($arrayModificatorString)
+                $parsedVariableString = substr($varName, 0, $dotPositions[0]). $arrayModificatorString;
+            else
+                $parsedVariableString = $varName;
 
-			foreach ($mappedVariablePositions as &$pos)
-			{
-				if ($pos['varName'] == $varName)
-					$pos['parsed'] = $parsedVariableString;
-			}
+            foreach ($mappedVariablePositions as &$pos)
+            {
+                if ($pos['varName'] == $varName)
+                    $pos['parsed'] = $parsedVariableString;
+            }
         }
 
         usort($mappedVariablePositions, function ($a, $b) {
@@ -783,12 +783,12 @@ class Parser
             if ($i > 1)
                 $startPosDiff = $diff;
 
-			$replacement = $position['parsed'];
+            $replacement = $position['parsed'];
 
-			if ($updateModifier)
-			{
-				$replacement = $this->parseModifiers($replacement . $position['modifier']);
-			}
+            if ($updateModifier)
+            {
+                $replacement = $this->parseModifiers($replacement . $position['modifier']);
+            }
 
             $html = substr_replace($html, $replacement, ($position['pos'] + $startPosDiff), $position['length']);
             $diff += (strlen($replacement) - strlen($position['varName']));
@@ -1316,50 +1316,50 @@ class Parser
             $tagData['count']++;
         }
 
-		$body = $this->varReplace(substr($part, $len + $posX, (strlen($part) - ($posY + $len + $posX))), $this->tagData['loop']['level'], $escape = FALSE);
-		$body = $this->parseStrings($body, $blockIndex, $blockPositions, $code, $templateFilePath);
+        $body = $this->varReplace(substr($part, $len + $posX, (strlen($part) - ($posY + $len + $posX))), $this->tagData['loop']['level'], $escape = FALSE);
+        $body = $this->parseStrings($body, $blockIndex, $blockPositions, $code, $templateFilePath);
 
         $part = '<?php ' .$type. '(' .$body. '){?>';
         return true;
     }
 
 
-	/**
-	 * Find all strings in the code and replace modifiers
-	 *
-	 * @param string $body Input code
-	 * @param string $blockIndex
-	 * @param string $blockPositions
-	 * @param string $code
-	 * @param string $templateFilePath
-	 *
-	 * @throws SyntaxException
-	 * @return string
-	 */
-	public function parseStrings($body, $blockIndex = '', $blockPositions = '', $code = '', $templateFilePath = '')
-	{
-		$quotePos = 0;
+    /**
+     * Find all strings in the code and replace modifiers
+     *
+     * @param string $body Input code
+     * @param string $blockIndex
+     * @param string $blockPositions
+     * @param string $code
+     * @param string $templateFilePath
+     *
+     * @throws SyntaxException
+     * @return string
+     */
+    public function parseStrings($body, $blockIndex = '', $blockPositions = '', $code = '', $templateFilePath = '')
+    {
+        $quotePos = 0;
 
-		// let's search for a pair of quotes, $quotePos and $endingQuotePos
-		do
-		{
+        // let's search for a pair of quotes, $quotePos and $endingQuotePos
+        do
+        {
             // include paths applied in this loop in previous iterations
             if ($quotePos > strlen($body))
                 break;
 
-			$char = null;
-			$quotePos = self::strposa($body, array('"', "'"), $quotePos, 'min', $char);
+            $char = null;
+            $quotePos = self::strposa($body, array('"', "'"), $quotePos, 'min', $char);
 
-			if ($quotePos === false)
-				break;
+            if ($quotePos === false)
+                break;
 
             $endingQuotePos = self::strposa($body, array($char), ($quotePos + 1));
 
-			if ($endingQuotePos === false)
-			{
-				$context = $this->findLine($blockIndex, $blockPositions, $code);
-				throw new SyntaxException('Unclosed ' . $char . ' quote string in fragment "' . $body . '"', 64, null, $context['line'], $templateFilePath);
-			}
+            if ($endingQuotePos === false)
+            {
+                $context = $this->findLine($blockIndex, $blockPositions, $code);
+                throw new SyntaxException('Unclosed ' . $char . ' quote string in fragment "' . $body . '"', 64, null, $context['line'], $templateFilePath);
+            }
 
             $quotesContent = substr($body, $quotePos, (($endingQuotePos - $quotePos) + 1));
 
@@ -1409,103 +1409,103 @@ class Parser
                 $quotePos = $endingQuotePos = ($quotePos + strlen($replacement));
             }
 
-			/**
-			 * Modificators support
-			 *
-			 * "dupa"|in:$array and 5 > 6 and "te|st" != "test123 |"
-			 */
-			$modificatorPos = strpos($body, '|', $endingQuotePos); // NOTE: this does not means that it's this string modificator
+            /**
+             * Modificators support
+             *
+             * "dupa"|in:$array and 5 > 6 and "te|st" != "test123 |"
+             */
+            $modificatorPos = strpos($body, '|', $endingQuotePos); // NOTE: this does not means that it's this string modificator
 
-			if ($modificatorPos !== false)
-			{
-				// if "|" character found right after quotes
-				if ($modificatorPos === ($endingQuotePos + 1))
-				{
-					$space = '';
-					$spaceSize = 1;
-				}
-				else
-				{
-					// check if space between quotes and modificator is empty (could only include spaces)
-					$spaceSize = (($modificatorPos) - $endingQuotePos); // "this is a test"______|modificator # space means that "____" characters, we could have spaces here
-					$space = trim(substr($body, ($endingQuotePos + 1), ($spaceSize - 1)));
-				}
+            if ($modificatorPos !== false)
+            {
+                // if "|" character found right after quotes
+                if ($modificatorPos === ($endingQuotePos + 1))
+                {
+                    $space = '';
+                    $spaceSize = 1;
+                }
+                else
+                {
+                    // check if space between quotes and modificator is empty (could only include spaces)
+                    $spaceSize = (($modificatorPos) - $endingQuotePos); // "this is a test"______|modificator # space means that "____" characters, we could have spaces here
+                    $space = trim(substr($body, ($endingQuotePos + 1), ($spaceSize - 1)));
+                }
 
-				if (!$space) // check if our space contains only blank spaces
-				{
-					// {"test"|replace:"aaa":"bbb ccc"|| 1 > 2}
-					// {"test"|replace:"aaa":"bbb)ccc" and (1 > 2)}
-					// {"test"|replace:"aaa":"bbbccc" and true != false}
+                if (!$space) // check if our space contains only blank spaces
+                {
+                    // {"test"|replace:"aaa":"bbb ccc"|| 1 > 2}
+                    // {"test"|replace:"aaa":"bbb)ccc" and (1 > 2)}
+                    // {"test"|replace:"aaa":"bbbccc" and true != false}
 
-					$endingChar = self::strposaNotInQuotes($body, array(
-						' ', '(', ')', '}', '&', '||',
-					), $modificatorPos);
+                    $endingChar = self::strposaNotInQuotes($body, array(
+                        ' ', '(', ')', '}', '&', '||',
+                    ), $modificatorPos);
 
-					// if we don't have space at the end, but maybe a operator, closing character etc.
-					if ($endingChar === false)
-					{
-						$endingChar = strlen($body);
-					}
+                    // if we don't have space at the end, but maybe a operator, closing character etc.
+                    if ($endingChar === false)
+                    {
+                        $endingChar = strlen($body);
+                    }
 
-					$modificator = substr($body, $quotePos, ($endingChar - $quotePos));
+                    $modificator = substr($body, $quotePos, ($endingChar - $quotePos));
                     $replacement = $this->parseModifiers($modificator, false);
-					$body = substr_replace($body, $replacement, $quotePos, ($endingChar - $quotePos));
+                    $body = substr_replace($body, $replacement, $quotePos, ($endingChar - $quotePos));
 
                     // include substr_replace difference
                     $quotePos = $endingQuotePos = ($quotePos + strlen($replacement));
-				}
-			}
+                }
+            }
 
-			// move outside of our position to find next occurrences
-			$quotePos = $endingQuotePos + 1;
+            // move outside of our position to find next occurrences
+            $quotePos = $endingQuotePos + 1;
 
-		} while ($quotePos !== false);
+        } while ($quotePos !== false);
 
-		return $body;
-	}
+        return $body;
+    }
 
-	/**
-	 * Find characters that are NOT placed inside of quotes
-	 *
-	 * @param string $haystack Base string
-	 * @param string|array $needle Character/string list
-	 * @param int $pos Starting position
-	 * @param bool $multiple Search for multiple occurrences
-	 *
-	 * @author Damian Kęska <damian.keska@fingo.pl>
-	 * @return bool|int
-	 */
-	public static function strposaNotInQuotes($haystack, $needle, $pos = 0, $multiple = false)
-	{
-		$allQuotes = self::getQuotesPositions($haystack);
-		$multipleResults = array();
+    /**
+     * Find characters that are NOT placed inside of quotes
+     *
+     * @param string $haystack Base string
+     * @param string|array $needle Character/string list
+     * @param int $pos Starting position
+     * @param bool $multiple Search for multiple occurrences
+     *
+     * @author Damian Kęska <damian.keska@fingo.pl>
+     * @return bool|int
+     */
+    public static function strposaNotInQuotes($haystack, $needle, $pos = 0, $multiple = false)
+    {
+        $allQuotes = self::getQuotesPositions($haystack);
+        $multipleResults = array();
 
-		while (true)
-		{
-			$char = null;
-			$pos = self::strposa($haystack, $needle, $pos, 'min', $char);
+        while (true)
+        {
+            $char = null;
+            $pos = self::strposa($haystack, $needle, $pos, 'min', $char);
 
-			if ($pos === false)
-			{
-				break;
-			}
+            if ($pos === false)
+            {
+                break;
+            }
 
-			if (!self::isInQuotes($allQuotes, $pos, strlen($char)))
-			{
-				if ($multiple)
-					$multipleResults[] = $pos;
-				else
-					return $pos;
-			}
+            if (!self::isInQuotes($allQuotes, $pos, strlen($char)))
+            {
+                if ($multiple)
+                    $multipleResults[] = $pos;
+                else
+                    return $pos;
+            }
 
-			$pos++;
-		}
+            $pos++;
+        }
 
-		if ($multiple)
-			return $multipleResults;
+        if ($multiple)
+            return $multipleResults;
 
-		return false;
-	}
+        return false;
+    }
 
 
     /**
@@ -1517,7 +1517,7 @@ class Parser
      *
      * @throws SyntaxException
      * @author Damian Kęska <damian@pantheraframework.org>
-	 *
+     *
      * @return null|void
      */
     protected function elseBlockParser(&$tagData, &$part, &$tag, $templateFilePath, $blockIndex, $blockPositions, $code)
@@ -1665,11 +1665,11 @@ class Parser
 
     /**
      * {function} instruction, handles also strings and it's modificators.
-	 *
-	 * Features:
-	 * - Raw function calls eg. {var_dump($a)}
-	 * - Modificators support {test()|trim}
-	 * - Ternary operator {test() ? $a : b}
+     *
+     * Features:
+     * - Raw function calls eg. {var_dump($a)}
+     * - Modificators support {test()|trim}
+     * - Ternary operator {test() ? $a : b}
      *
      * Examples:
      * {function="test()"}
@@ -1686,38 +1686,38 @@ class Parser
      */
     protected function functionBlockParser(&$tagData, &$part, &$tag, $templateFilePath, $blockIndex, $blockPositions, $code, &$passAllBlocksTo, $lowerPart)
     {
-		$isString = in_array(substr($part, 1, 1), array("'", '"'));
+        $isString = in_array(substr($part, 1, 1), array("'", '"'));
 
-		// Exception: isset is a part of PHP syntax, so it's not detected as callable
-		$isDirectFunction = substr($part, 1, strpos($part, '(') - 1);
+        // Exception: isset is a part of PHP syntax, so it's not detected as callable
+        $isDirectFunction = substr($part, 1, strpos($part, '(') - 1);
         $isDirectFunction = (is_callable($isDirectFunction) || $isDirectFunction === 'isset');
 
         if (substr(strtolower($part), 0, 9) !== '{function' && !$isDirectFunction && !$isString)
             return false;
 
-		$ternary = '';
+        $ternary = '';
 
         if ($isDirectFunction || $isString)
         {
-			// {function()}
+            // {function()}
             $function = substr($part, 1, strlen($part) - 2);
 
-			$ternaryStarts = self::strposa($function, array(
-				'?"', '? "', "?'", "? '",
-			));
+            $ternaryStarts = self::strposa($function, array(
+                '?"', '? "', "?'", "? '",
+            ));
 
-			/**
-			 * Ternary operator support for functions
-			 *
-			 * Example:
-			 * {test() ? $a : $b}
-			 */
-			if ($ternaryStarts !== false)
-			{
-				$body = $function;
-				$function = substr($function, 0, $ternaryStarts);
-				$ternary = substr($body, $ternaryStarts);
-			}
+            /**
+             * Ternary operator support for functions
+             *
+             * Example:
+             * {test() ? $a : $b}
+             */
+            if ($ternaryStarts !== false)
+            {
+                $body = $function;
+                $function = substr($function, 0, $ternaryStarts);
+                $ternary = substr($body, $ternaryStarts);
+            }
 
             // integration with embedded JSON in Javascript eg. $(this).css({'color': '#343e4a'});
             $char = '';
@@ -1727,7 +1727,7 @@ class Parser
                 return true;
 
         } else {
-			// {function="..."}
+            // {function="..."}
             $count = 2;
 
             if (substr($part, -2) !== '"}' && substr($part, -2) !== "'}")
@@ -2132,15 +2132,15 @@ class Parser
         return $newArray;
     }
 
-	/**
-	 * Parse modifiers on a string or variable, function
-	 *
-	 * @param string $var Variable/string/function input string
-	 * @param bool $useVarReplace
-	 *
-	 * @return string Output
-	 * @author Damian Kęska <damian@pantheraframework.org>
-	 */
+    /**
+     * Parse modifiers on a string or variable, function
+     *
+     * @param string $var Variable/string/function input string
+     * @param bool $useVarReplace
+     *
+     * @return string Output
+     * @author Damian Kęska <damian@pantheraframework.org>
+     */
     public function parseModifiers($var, $useVarReplace = false)
     {
         $functions = explode('|', $var);
@@ -2168,13 +2168,13 @@ class Parser
                 if ($i === 0)
                     continue;
 
-				/**
-				 * Extract variable from string
-				 */
-				if (strlen($arg) > 2 && $arg[1] == '$')
-				{
-					$arg = substr($arg, 1, strlen($arg) - 2);
-				}
+                /**
+                 * Extract variable from string
+                 */
+                if (strlen($arg) > 2 && $arg[1] == '$')
+                {
+                    $arg = substr($arg, 1, strlen($arg) - 2);
+                }
 
                 $result .= ', ' .str_replace('\@;;', '::', $arg);
             }
