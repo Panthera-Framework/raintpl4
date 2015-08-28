@@ -2,6 +2,7 @@
 /**
  * Testcases for integration with CSS syntax compilers LESS and SASS
  *
+ * @package RainTPL4\syntax\inlineParsers\tests
  * @author Damian Kęska <damian@pantheraframework.org>
  */
 class CSSLessPluginTest extends RainTPLTestCase

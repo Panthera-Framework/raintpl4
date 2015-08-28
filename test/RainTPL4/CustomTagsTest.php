@@ -2,6 +2,7 @@
 /**
  * Custom tags testcase
  *
+ * @package RainTPL4\syntax\customTags\tests
  * @author Damian Kęska <damian@pantheraframework.org>
  */
 class CustomTagsTest extends RainTPLTestCase

@@ -2,6 +2,7 @@
 /**
  * {function} tag test
  *
+ * @package RainTPL4\syntax\functions\tests
  * @author Damian Kęska <damian@pantheraframework.org>
  */
 class FunctionTest extends RainTPLTestCase

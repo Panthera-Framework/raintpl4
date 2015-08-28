@@ -2,6 +2,7 @@
 /**
  * pseudoSandboxing RainTPL4 plugin tests
  *
+ * @package RainTPL4\plugins\pseudoSandboxing\tests
  * @author Damian Kęska <damian@pantheraframework.org>
  */
 class pseudoSandboxingTest extends RainTPLTestCase

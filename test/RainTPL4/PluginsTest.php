@@ -2,6 +2,7 @@
 /**
  * RainTPL4 Events Handler testcase
  *
+ * @package RainTPL4\plugins\tests
  * @author Damian Kęska <damian@pantheraframework.org>
  */
 class PluginsTest extends RainTPLTestCase

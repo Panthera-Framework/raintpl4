@@ -2,6 +2,7 @@
 /**
  * Variable replacing inside loops testing
  *
+ * @package RainTPL4\parser\variableReplacing
  * @author Damian Kęska <damian@pantheraframework.org>
  */
 class VarReplaceTest extends RainTPLTestCase

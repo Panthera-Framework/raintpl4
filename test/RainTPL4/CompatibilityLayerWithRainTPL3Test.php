@@ -2,6 +2,7 @@
 /**
  * RainTPL3 compatibility layer test
  *
+ * @package RainTPL4\backwardsCompatibility
  * @author Damian Kęska <damian@pantheraframework.org>
  */
 class CompatibilityLayerWithRainTPL3Test extends RainTPLTestCase

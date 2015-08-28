@@ -2,6 +2,7 @@
 /**
  * {capture}, {print}, {autoescape} tags test
  *
+ * @package RainTPL4\syntax\capture\tests
  * @author Damian Kęska <damian@pantheraframework.org>
  */
 class CaptureTest extends RainTPLTestCase

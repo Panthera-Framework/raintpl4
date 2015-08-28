@@ -2,6 +2,7 @@
 /**
  * {include} tag testcase
  *
+ * @package RainTPL4\syntax\include\tests
  * @author Damian Kęska <damian@pantheraframework.org>
  */
 class IncludeTest extends RainTPLTestCase

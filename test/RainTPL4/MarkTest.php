@@ -2,6 +2,7 @@
 /**
  * Mark testcases
  *
+ * @package RainTPL4\syntax\goto\tests
  * @author Mateusz Warzyński <lxnmen@gmail.com>
  */
 class MarkTest extends RainTPLTestCase

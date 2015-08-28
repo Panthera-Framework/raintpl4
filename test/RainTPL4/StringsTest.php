@@ -2,6 +2,7 @@
 /**
  * Test {"string"|modifier} syntax
  *
+ * @package RainTPL4\syntax\strings\tests
  * @author Damian Kęska <damian.keska@fingo.pl>
  * @author Mateusz Warzyński <lxnmen@gmail.com>
  */

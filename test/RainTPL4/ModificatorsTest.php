@@ -2,6 +2,7 @@
 /**
  * Modificators test class
  *
+ * @package RainTPL4\syntax\modificators\tests
  * @author Mateusz Warzyński <lxnmen@gmail.com>
  */
 

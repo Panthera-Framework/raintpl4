@@ -10,6 +10,7 @@
  *   - name
  *   - {dynamic} passed as $args and $_blockMeta
  *
+ * @package RainTPL4\syntax\block\tests
  * @author Damian Kęska <damian@pantheraframework.org>
  */
 class BlockTest extends RainTPLTestCase

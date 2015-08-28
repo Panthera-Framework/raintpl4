@@ -2,6 +2,7 @@
 /**
  * Test builtin modifier functions
  *
+ * @package RainTPL4\syntax\modifiers\tests
  * @author Damian Kęska <damian@pantheraframework.org>
  */
 class BuiltinModifiersTest extends RainTPLTestCase

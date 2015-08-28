@@ -2,6 +2,7 @@
 /**
  * Escaping parts of code testcases
  *
+ * @package RainTPL4\syntax\literal\tests
  * @author Mateusz Warzyński <lxnmen@gmail.com>
  */
 class NoParseTest extends RainTPLTestCase

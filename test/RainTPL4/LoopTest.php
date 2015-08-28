@@ -2,6 +2,7 @@
 /**
  * Loop testcases
  *
+ * @package RainTPL4\syntax\loops\tests
  * @author Mateusz Warzyński <lxnmen@gmail.com>
  */
 class LoopTest extends RainTPLTestCase

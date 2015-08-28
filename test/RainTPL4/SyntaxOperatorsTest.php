@@ -2,6 +2,7 @@
 /**
  * Syntax operators test eg. "in" / string[0..1] / array[0:5]
  *
+ * @package RainTPL4\syntax\in\tests
  * @author Damian Kęska <damian@pantheraframework.org>
  */
 class SyntaxOperatorsTest extends RainTPLTestCase
