@@ -36,39 +36,6 @@ class NoParseTest extends RainTPLTestCase
     }
 
     /**
-     * Testcase for comment - {* This is a test comment *}
-     *
-     * @author Mateusz Warzyński <lxnmen@gmail.com>
-     */
-    public function testCommentFirst()
-    {
-        $this->setupRainTPL4();
-        $this->assertEquals('something', $this->engine->drawString("some{* This is a test comment *}thing", true));
-    }
-
-    /**
-     * Testcase for comment - {*} This is a test comment #2 {/*}
-     *
-     * @author Mateusz Warzyński <lxnmen@gmail.com>
-     */
-    public function testCommentSecond()
-    {
-        $this->setupRainTPL4();
-        $this->assertEquals('something', $this->engine->drawString("{*} This is a test comment #2 {/*}something", true));
-    }
-
-    /**
-     * Testcase for comment - {ignore}This is a test comment #3{/ignore}
-     *
-     * @author Mateusz Warzyński <lxnmen@gmail.com>
-     */
-    public function testCommentThird()
-    {
-        $this->setupRainTPL4();
-        $this->assertEquals('something', $this->engine->drawString("{ignore}This is a test comment #3{/ignore}something", true));
-    }
-
-    /**
      * Testcase for comment, loading variables inside comment
      *
      * @author Mateusz Warzyński <lxnmen@gmail.com>
@@ -77,16 +44,10 @@ class NoParseTest extends RainTPLTestCase
     {
         $this->setupRainTPL4();
         $this->assertEquals('something', $this->engine->drawString('{*}{$hiddenValue}{/*}something', true));
-    }
-
-    /**
-     * Testcase for comment, different tags as one comment
-     *
-     * @author Mateusz Warzyński <lxnmen@gmail.com>
-     */
-    public function testCommentFifth()
-    {
-        $this->setupRainTPL4();
+        $this->assertEquals('something', $this->engine->drawString("{ignore}This is a test comment #3{/ignore}something", true));
         $this->assertEquals('something', $this->engine->drawString("{*}I am special!{/ignore}something", true));
+        $this->assertEquals('something', $this->engine->drawString("{*} This is a test comment #2 {/*}something", true));
+        $this->assertEquals('something', $this->engine->drawString("some{* This is a test comment *}thing", true));
+        $this->assertEquals('something', $this->engine->drawString("some{*}This is a multi comment test{*} this is a test{/*}{/*}thing", true));
     }
 }
