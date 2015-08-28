@@ -14,7 +14,7 @@ require_once "Rain/autoload.php";
 class RainTPLTestCase extends PHPUnit_Framework_TestCase
 {
     /**
-     * @var RainTPL4|null
+     * @var \Rain\RainTPL4|null
      */
     public $engine = null;
 
