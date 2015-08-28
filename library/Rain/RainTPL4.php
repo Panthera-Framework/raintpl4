@@ -117,6 +117,7 @@ class RainTPL4
      */
     public function __construct()
     {
+        $engine = $this;
         $this->config['pluginsIncludePath'][] = __DIR__. '/Plugins/';
 
         // @debug Damian Kęska
@@ -139,7 +140,7 @@ class RainTPL4
         /**
          * Cuts of a string to a selected length limit appending ending string, eg. "..."
          *
-         * @param $inputString Input string to cut off
+         * @param string $inputString Input string to cut off
          * @param int $limit Char limit
          * @param string $ending Ending string
          *
@@ -174,6 +175,17 @@ class RainTPL4
             }
 
             return false;
+        };
+
+        /**
+         * Check if block was defined
+         *
+         * @param string $blockName
+         * @author Damian Kęska <damian@pantheraframework.org>
+         * @return bool
+         */
+        $this->modifiers['blockExists'] = function ($blockName) use($engine) {
+            return isset($engine->definedBlocks);
         };
     }
 
