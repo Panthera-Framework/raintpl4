@@ -34,7 +34,7 @@ Installation / Usage
     ``` json
     {
         "require": {
-            "rain/raintpl": ">=4.0.0"
+            "pantheraframework/raintpl4": "@dev"
         }
     }
     ```
