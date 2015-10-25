@@ -46,20 +46,21 @@ class Parser
         // @TODO: {autoescape} for escaping HTML code inside
         // @TODO: Ternary operator on variables
 
-        'variable' => true, // {$} RainTPL4
-        'if' => true, // {if}, {elseif} RainTPL4
-        'else' => true, // {else} RainTPL4
-        'function' => true, // {function} RainTPL4
-        'loop' => true, // {loop}, {foreach} RainTPL4
-        'loop_break' => true, // RainTPL4
-        'include' => true, // RainTPL4
-        'capture' => true, // RainTPL4
-        'block' => true, // {block} RainTPL4
-        'noparse' => true, // {noparse}, {literal} RainTPL4
-        'comment' => true, // {*}, {ignore} RainTPL4
-        'constant' => true, // {#CONSTANT_NAME#} RainTPL4
-        'mark' => true, // {mark a} {goto a} RainTPL4
+        'variable' => true, // {$}
+        'if' => true, // {if}, {elseif}
+        'else' => true, // {else}
+        'function' => true, // {function}
+        'loop' => true, // {loop}, {foreach}
+        'loop_break' => true,
+        'include' => true,
+        'capture' => true,
+        'block' => true, // {block}
+        'noparse' => true, // {noparse}, {literal}
+        'comment' => true, // {*}, {ignore}
+        'constant' => true, // {#CONSTANT_NAME#}
+        'mark' => true, // {mark a} {goto a}
         'customTags' => false, // Custom defined tags (regexp only), will auto-enable when $registeredTags will contain any function
+        'autoescape' => true,
         // put your custom 'tagName' => true/false // here, and put 'tagName' => function() to $this->blockParserCallbacks to register you own non-regexp block parser
     );
 
@@ -82,6 +83,14 @@ class Parser
     public $modifiers = array(
 
     );
+
+    /**
+     * Auto escaping of variables
+     * This variable is set by {autoescape} tag in template code and by a getter $this->isEscaping()
+     *
+     * @var bool|null $autoEscapeStatus
+     */
+    protected $autoEscapeStatus = null;
 
     /**
      * Constructor
@@ -838,7 +847,10 @@ class Parser
      */
     protected function isEscaping()
     {
-        return (bool)$this->getConfigurationKey('auto_escape', false);
+        if ($this->autoEscapeStatus === null)
+            $this->autoEscapeStatus = $this->getConfigurationKey('auto_escape', false);
+
+        return (bool)$this->autoEscapeStatus;
     }
 
     /**
@@ -1090,13 +1102,11 @@ class Parser
         $ending = $this->parseTagEnding($lowerPart, array(
             'capture',
             'print',
-            'autoescape',
         ));
 
         $tagRealName = self::strposa($lowerPart, array(
             '{capture',
             '{print',
-            '{autoescape',
         ), 0, 'min', $char);
 
         if ($tagRealName === false && !$ending)
@@ -1709,6 +1719,47 @@ class Parser
         }
 
         return false;
+    }
+
+    /**
+     * {autoescape} block parser
+     *
+     * Examples:
+     *   {autoescape="off"}
+     *   {autoescape="on"}
+     *   {autoescape="false"}
+     *   {autoescape="true"}
+     *
+     * @param $tagData
+     * @param $part
+     * @param $tag
+     * @param $templateFilePath
+     * @param $blockIndex
+     * @param $blockPositions
+     * @param $code
+     * @param $passAllBlocksTo
+     * @param $lowerPart
+     * @return null
+     */
+    public function autoescapeBlockParser(&$tagData, &$part, &$tag, $templateFilePath, $blockIndex, $blockPositions, $code, &$passAllBlocksTo, $lowerPart)
+    {
+        if (substr($lowerPart, 0, 11) == '{autoescape')
+        {
+            $arguments = $this->parseTagArguments(substr(substr($lowerPart, 1), 0, -1));
+
+            if (isset($arguments['autoescape']))
+            {
+                $arguments['autoescape'] = strtolower($arguments['autoescape']);
+                $this->autoEscapeStatus = ($arguments['autoescape'] == 'off' || $arguments['autoescape'] == 'false');
+            }
+        }
+
+        elseif (substr($lowerPart, 0, 12) == '{/autoescape')
+        {
+            $this->autoEscapeStatus = $this->getConfigurationKey('auto_escape', false);
+        }
+
+        return null;
     }
 
     /**
