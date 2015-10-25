@@ -94,9 +94,10 @@ class pseudoSandboxing extends Rain\Tpl\RainTPL4Plugin
         $traverser = new PhpParser\NodeTraverser;
         $traverser->addVisitor($collector);
 
-        $this->parser = new PhpParser\Parser(new PhpParser\Lexer\Emulative);
+        $factory = new PhpParser\ParserFactory();
+        $this->parser = $factory->create(PhpParser\ParserFactory::PREFER_PHP5);
         $stmts = $this->parser->parse($input[0]);
-        $stmts = $traverser->traverse($stmts);
+        $traverser->traverse($stmts);
 
         /**
          * Whitelist support
