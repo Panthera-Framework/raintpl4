@@ -13,6 +13,7 @@ $rain->setConfiguration(array(
     "remove_comments" => true,
     "debug"         => true, // set to false to improve the speed
     "ignore_unknown_tags"   => true,
+    'charset' => 'utf-8',
 ));
 
 // Add PathReplace plugin (necessary to load the CSS with path replace)
@@ -23,7 +24,7 @@ $rain->setConfiguration(array(
 $rain->assign(array(
     "variable"  => "Hello World!",
     "bad_variable"  => "<script>alert('evil javascript here');</script>",
-    "safe_variable"  => "<script>console.log('this is safe')</script>",
+    "safe_variable"  => "<script>alert('this is safe')</script>",
     "version"   => "3.1 Beta",
     "menu"		=> array(
         array("name" => "Home", "link" => "index.php", "selected" => true ),

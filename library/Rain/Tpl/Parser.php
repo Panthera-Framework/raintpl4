@@ -825,11 +825,6 @@ class Parser
                 $replacement = $this->parseModifiers($replacement . $position['modifier']);
             }
 
-            if ($this->isEscaping() && $escape === true)
-            {
-                $replacement = $this->escape($replacement);
-            }
-
             /** @Slot Parser.varReplace.var */
             $replacement = $this->executeEvent('Parser.varReplace.var', $replacement);
 
@@ -861,7 +856,10 @@ class Parser
      */
     protected function escape($code)
     {
-        return "htmlspecialchars(" .$code. ", ENT_COMPAT, " .$this->getConfigurationKey('charset', ini_get('default_charset')). ", false)";
+        if (!$this->isEscaping())
+            return $code;
+
+        return "(is_string(" . $code . ") ? htmlspecialchars(" .$code. ", ENT_COMPAT, '" .$this->getConfigurationKey('charset', ini_get('default_charset')). "', false) : " . $code . ")";
     }
 
     /**
@@ -1041,7 +1039,7 @@ class Parser
         }
 
         // variables substitution (eg. {$title})
-        $part = "<?php echo " . $this->parseModifiers($var, true) . ";?>";
+        $part = "<?php print(" . $this->escape($this->varReplace($var, 'auto', true)) . ");?>";
         return true;
     }
 
@@ -1225,7 +1223,7 @@ class Parser
         /**
          * For {print} and {autoescape} tags it's not necessary to specify an assign/name/append argument
          */
-        if ((!isset($arguments['assign']) && !isset($arguments['append']) && !isset($arguments['name'])) && ($char === '{print' || $char === '{autoescape'))
+        if ((!isset($arguments['assign']) && !isset($arguments['append']) && !isset($arguments['name'])) && $char === '{print')
         {
             $arguments['assign'] = 'capture' .($tagData['level'] + 1);
             $arguments['print'] = 1;
@@ -1455,16 +1453,6 @@ class Parser
              */
             if (stripos($body, $quotesContent. ' in ') !== false)
             {
-                // unescape variable before
-                if ($this->isEscaping())
-                {
-                    // find escaped content
-                    $haystack = substr($body, ($endingQuotePos + 5));
-
-                    // unescape
-                    $body = substr_replace($body, $this->unEscape($haystack), ($endingQuotePos + 5));
-                }
-
                 // $quotesContent + " in "
                 $inChar = substr($body, $endingQuotePos + 5, 1);
 
@@ -1494,7 +1482,7 @@ class Parser
 
                 if ($inChar == '$')
                 {
-                    $haystack = $this->varReplace($haystack, 'auto', true);
+                    $haystack = $this->varReplace($haystack, 'auto', false);
                 }
 
                 $replacement = '($this->modifiers["in"](' .$quotesContent. ', ' .$haystack. '))';
@@ -1750,13 +1738,16 @@ class Parser
             if (isset($arguments['autoescape']))
             {
                 $arguments['autoescape'] = strtolower($arguments['autoescape']);
-                $this->autoEscapeStatus = ($arguments['autoescape'] == 'off' || $arguments['autoescape'] == 'false');
+                $this->autoEscapeStatus = !($arguments['autoescape'] == 'off' || $arguments['autoescape'] == 'false');
             }
+
+            $part = '';
         }
 
         elseif (substr($lowerPart, 0, 12) == '{/autoescape')
         {
             $this->autoEscapeStatus = $this->getConfigurationKey('auto_escape', false);
+            $part = '';
         }
 
         return null;
@@ -2285,7 +2276,7 @@ class Parser
         $result = $functions[0];
 
         if ($useVarReplace === true)
-            $result = $functions[0] = $this->varReplace($result, $this->tagData['loop']['level'], null, false, false);
+            $result = $functions[0] = $this->varReplace($result, $this->tagData['loop']['level'], null, true, false);
 
         foreach ($functions as $function)
         {
