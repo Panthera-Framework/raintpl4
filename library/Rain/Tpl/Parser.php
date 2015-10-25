@@ -643,7 +643,7 @@ class Parser
      * @param bool $updateModifier
      * @return mixed|string
      */
-    protected function varReplace($html, $loopLevel = NULL, $escape = TRUE, $echo = FALSE, $updateModifier = TRUE)
+    protected function varReplace($html, $loopLevel = null, $escape = false, $echo = false, $updateModifier = true)
     {
         if ($loopLevel === 'auto' && isset($this->tagData['loop']) && isset($this->tagData['loop']['level']))
         {
@@ -652,7 +652,7 @@ class Parser
 
         // change variable name if loop level
         if (!empty($loopLevel) && $loopLevel !== 'auto')
-            $html = preg_replace(array('/(\$key)\b/', '/(\$value)\b/', '/(\$counter)\b/'), array('${1}' . $loopLevel, '${1}' . $loopLevel, '${1}' . $loopLevel), $html);
+            $html = preg_replace(['/(\$key)\b/', '/(\$value)\b/', '/(\$counter)\b/'], ['${1}' . $loopLevel, '${1}' . $loopLevel, '${1}' . $loopLevel], $html);
 
         preg_match_all('/\$([a-z_A-Z.0-9$]+)/', $html, $variables);
 
@@ -661,11 +661,16 @@ class Parser
             return $html;
 
         $pos = 0;
-        $variablePositions = array();
+        $variablePositions = [];
 
+        /**
+         * Step 1
+         *
+         * Imagine you have a variable "$a", now find all places where it shows in $html
+         */
         foreach ($variables[0] as $varName)
         {
-            $variablePositions[$varName] = array();
+            $variablePositions[$varName] = [];
 
             do
             {
@@ -680,8 +685,13 @@ class Parser
             } while ($pos !== false);
         }
 
-        $mappedVariablePositions = array();
+        $mappedVariablePositions = [];
 
+        /**
+         * Step 2
+         *
+         * Create a flat array of all variables and it's occurrences for easier iteration later
+         */
         foreach ($variablePositions as $varName => $var)
         {
             foreach ($var as $varPos)
@@ -694,7 +704,7 @@ class Parser
                 /**
                  * Lookup for modifiers
                  *
-                 * @keywords modifiers
+                 * @Keywords modifiers
                  */
                 if ($updateModifier && substr($html, ($varPos + $length), 1) === '|')
                 {
@@ -722,12 +732,19 @@ class Parser
             }
         }
 
-        // all variables
+        /**
+         * Step 3
+         *
+         * Iterate over all variables, replace array operators eg. $test.a.b.c into $test['a']['b']['c']
+         */
         foreach ($variablePositions as $varName => $var)
         {
             $dotPositions = self::strposAll($varName, '.', 0);
-            $arrayModificatorString = '';
+            $arrayModifiersString = '';
 
+            /*
+             * Replace array syntax
+             */
             foreach ($dotPositions as $key => $position)
             {
                 $endChar = '';
@@ -743,23 +760,24 @@ class Parser
 
                 if (is_numeric($arrayPart))
                 {
-                    $arrayModificatorString .= '[' . (string)intval($arrayPart) . ']';
+                    $arrayModifiersString .= '[' . (string)intval($arrayPart) . ']';
                     continue;
                 }
 
-                $arrayModificatorString .= '["' .$arrayPart. '"]' .$endChar;
+                $arrayModifiersString .= '["' .$arrayPart. '"]' .$endChar;
             }
 
-            // restore a dot at the end of string if there was any but wasnt used as an array operator
+            // restore a dot at the end of string if there was any but was not used as an array operator
             if (substr($varName, -1) === '.')
-                $arrayModificatorString .= '.';
+                $arrayModifiersString .= '.';
 
-            // if any array modificator was found
-            if ($arrayModificatorString)
-                $parsedVariableString = substr($varName, 0, $dotPositions[0]). $arrayModificatorString;
+            // if any array modifier was found
+            if ($arrayModifiersString)
+                $parsedVariableString = substr($varName, 0, $dotPositions[0]). $arrayModifiersString;
             else
                 $parsedVariableString = $varName;
 
+            // update parsed version (array modifiers, etc.) of processed variable in all occurrences
             foreach ($mappedVariablePositions as &$pos)
             {
                 if ($pos['varName'] == $varName)
@@ -767,11 +785,19 @@ class Parser
             }
         }
 
+
+        // order our variables by position
         usort($mappedVariablePositions, function ($a, $b) {
             return ($a['pos'] - $b['pos']);
         });
 
-        // replace all occurrences
+
+        /**
+         * Step 4
+         *
+         * Finally after collecting data, processing variables with modifiers, array syntax etc.
+         * we could replace template syntax with PHP
+         */
         $diff = 0; $i=0; $startPosDiff = 0;
         foreach ($mappedVariablePositions as $position)
         {
@@ -790,11 +816,62 @@ class Parser
                 $replacement = $this->parseModifiers($replacement . $position['modifier']);
             }
 
+            if ($this->isEscaping() && $escape === true)
+            {
+                $replacement = $this->escape($replacement);
+            }
+
+            /** @Slot Parser.varReplace.var */
+            $replacement = $this->executeEvent('Parser.varReplace.var', $replacement);
+
             $html = substr_replace($html, $replacement, ($position['pos'] + $startPosDiff), $position['length']);
             $diff += (strlen($replacement) - strlen($position['varName']));
         }
 
         return $html;
+    }
+
+    /**
+     * Check if we are auto escaping variables
+     *
+     * @return bool
+     */
+    protected function isEscaping()
+    {
+        return (bool)$this->getConfigurationKey('auto_escape', false);
+    }
+
+    /**
+     * Escape part of code
+     *
+     * @param string $code
+     * @return string
+     */
+    protected function escape($code)
+    {
+        return "htmlspecialchars(" .$code. ", ENT_COMPAT, " .$this->getConfigurationKey('charset', ini_get('default_charset')). ", false)";
+    }
+
+    /**
+     * Unescape code
+     *
+     * @param string $code
+     * @return string
+     */
+    protected function unEscape($code)
+    {
+        if (!$this->isEscaping())
+            return $code;
+
+        $format = $this->escape('%s');
+        $found = sscanf($code, $format);
+
+        if ($found === false || is_array($found))
+        {
+            return $code;
+        }
+
+        return str_replace(',', '', $found);
     }
 
     /**
@@ -1316,7 +1393,7 @@ class Parser
             $tagData['count']++;
         }
 
-        $body = $this->varReplace(substr($part, $len + $posX, (strlen($part) - ($posY + $len + $posX))), $this->tagData['loop']['level'], $escape = FALSE);
+        $body = $this->varReplace(substr($part, $len + $posX, (strlen($part) - ($posY + $len + $posX))), $this->tagData['loop']['level'], false);
         $body = $this->parseStrings($body, $blockIndex, $blockPositions, $code, $templateFilePath);
 
         $part = '<?php ' .$type. '(' .$body. '){?>';
@@ -1368,6 +1445,16 @@ class Parser
              */
             if (stripos($body, $quotesContent. ' in ') !== false)
             {
+                // unescape variable before
+                if ($this->isEscaping())
+                {
+                    // find escaped content
+                    $haystack = substr($body, ($endingQuotePos + 5));
+
+                    // unescape
+                    $body = substr_replace($body, $this->unEscape($haystack), ($endingQuotePos + 5));
+                }
+
                 // $quotesContent + " in "
                 $inChar = substr($body, $endingQuotePos + 5, 1);
 
@@ -1397,7 +1484,7 @@ class Parser
 
                 if ($inChar == '$')
                 {
-                    $haystack = $this->varReplace($haystack, 'auto', false);
+                    $haystack = $this->varReplace($haystack, 'auto', true);
                 }
 
                 $replacement = '($this->modifiers["in"](' .$quotesContent. ', ' .$haystack. '))';
@@ -1745,7 +1832,7 @@ class Parser
         if ($isString)
             $body = $this->parseStrings($function, $blockIndex, $blockPositions, $code, $templateFilePath);
         else
-            $body = $this->varReplace($function, 'auto', false, false, true);
+            $body = $this->varReplace($function, 'auto', !$ternary, false, true);
 
         // function
         $part = "<?php echo ".$body. $ternary . ";?>";
@@ -1902,7 +1989,7 @@ class Parser
         // prefix, example: $value1, $value2 etc. by default should be just $value
         $valuesPrefix = intval($tagData['level']);
 
-        // replace array modificators eg. $array.test to $array["test"]
+        // replace array modifiers eg. $array.test to $array["test"]
         $newvar = $this->varReplace($var, ($valuesPrefix - 1), false, false, true);
 
         // loop variables
@@ -2147,7 +2234,7 @@ class Parser
         $result = $functions[0];
 
         if ($useVarReplace === true)
-            $result = $functions[0] = $this->varReplace($result, $this->tagData['loop']['level'], true, false, false);
+            $result = $functions[0] = $this->varReplace($result, $this->tagData['loop']['level'], null, false, false);
 
         foreach ($functions as $function)
         {

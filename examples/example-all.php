@@ -6,6 +6,7 @@ use Rain\Tpl;
 
 $rain = new Rain\RainTPL4;
 $rain->setConfiguration(array(
+    'auto_escape'   => true,
     "base_url"      => null,
     "tpl_dir"       => "../templates/test/",
     "cache_dir"     => "/tmp/",

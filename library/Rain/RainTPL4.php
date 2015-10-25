@@ -46,7 +46,7 @@ class RainTPL4
         'predetect' => true, // RainTPL4
         'base_url' => '',
         'php_enabled' => false,
-        'auto_escape' => true,
+        'auto_escape' => false,
         'force_compile' => false, // RainTPL4
         'allow_compile' => true, // RainTPL4
         'allow_compile_once' => true, // allow compile template only once, RainTPL4
