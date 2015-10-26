@@ -3,7 +3,7 @@
  * Auto escape feature tests
  *
  * @package RainTPL4\feature\escaping
- * @author Damian Kęska <damian.keska@fingo.pl>
+ * @author Damian Kęska <damian@pantheraframework.org>
  */
 class AutoescapeTest extends RainTPLTestCase
 {
