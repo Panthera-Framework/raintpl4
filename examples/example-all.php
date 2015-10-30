@@ -37,21 +37,15 @@ $rain->assign(array(
     "variable"       => "Hello World!",
     "bad_variable"   => "<script>alert('evil javascript here');</script>",
     "safe_variable"  => "<script>alert('this is safe')</script>",
-    "version"        => "3.1 Beta",
-
-    "menu"           => array(
-        array("name" => "Home", "link" => "index.php", "selected" => true ),
-        array("name" => "FAQ", "link" => "index.php/FAQ/", "selected" => null ),
-        array("name" => "Documentation", "link" => "index.php/doc/", "selected" => null )
-    ),
+    "version"        => "4.0 Alpha",
 
     "week"		=> array( "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" ),
     "user"		=> (object) array("name"=>"Rain", "citizen" => "Earth", "race" => "Human" ),
     "numbers"	=> array( 3, 2, 1 ),
     "bad_text"	=> 'Hey this is a malicious XSS <script>alert("auto_escape is always enabled");</script>',
     "table"		=> array( array( "Apple", "1996" ), array( "PC", "1997", "1998" ) ),
-    "title"		=> "Rain TPL 3 - Easy and Fast template engine",
-    "copyright" => "Copyright 2006 - 2012 Rain TPL<br>Project By Rain Team",
+    "title"		=> "RainTPL4 - Easy and Fast template engine",
+    "copyright" => "Copyright 2006 - 2015 Rain TPL<br>Project By Rain Team",
 ));
 
 echo $rain->draw("test");
