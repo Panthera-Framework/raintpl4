@@ -1939,10 +1939,11 @@ class Parser
         {
             if (substr($includeTemplate, 0, 1) == '$' || defined($includeTemplate))
             {
-                $part = '<?php require $this->checkTemplate(' . $includeTemplate . ', "' .$templateFilePath. '", ' .intval($context['line']). ', ' .intval($context['offset']). ');?>';
+                // extract() before include allows re-include reassigned variables in included templates
+                $part = '<?php extract($this->variables); require $this->checkTemplate(' . $includeTemplate . ', "' .$templateFilePath. '", ' .intval($context['line']). ', ' .intval($context['offset']). ');?>';
                 $found = true;
             } else {
-                $part = '<?php require $this->checkTemplate("' . $includeTemplate . '", "' .$templateFilePath. '", ' .intval($context['line']). ', ' .intval($context['offset']). ');?>';
+                $part = '<?php extract($this->variables); require $this->checkTemplate("' . $includeTemplate . '", "' .$templateFilePath. '", ' .intval($context['line']). ', ' .intval($context['offset']). ');?>';
                 $found = true;
             }
 

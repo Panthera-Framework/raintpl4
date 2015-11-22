@@ -298,6 +298,22 @@ class RainTPL4
     }
 
     /**
+     * Register a modifier
+     *
+     * @param string $name
+     * @param callable $callback
+     */
+    public function registerModifier($name, callable $callback)
+    {
+        if (is_callable($callback) && is_string($name))
+        {
+            $this->modifiers[$name] = $callback;
+        }
+
+        return $this;
+    }
+
+    /**
      * Clean the expired files from
      *
      * @param int $expireTime Expiration time
