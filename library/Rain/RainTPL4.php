@@ -289,6 +289,15 @@ class RainTPL4
     }
 
     /**
+     * @param string $variableName
+     * @return mixed
+     */
+    public function getAssignedVariable($variableName)
+    {
+        return isset($this->variables[$variableName]) ? $this->variables[$variableName] : null;
+    }
+
+    /**
      * Clean the expired files from
      *
      * @param int $expireTime Expiration time
